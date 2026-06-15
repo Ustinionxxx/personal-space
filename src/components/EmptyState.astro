@@ -1,0 +1,37 @@
+---
+import Character from "@/components/Character.astro";
+import type { CharacterId } from "@/components/Character.astro";
+
+interface Props {
+  character: CharacterId;
+  message: string;
+}
+
+const { character, message } = Astro.props;
+---
+
+<div class="empty-state">
+  <div class="empty-state-char">
+    <Character id={character} size={120} />
+  </div>
+  <p class="empty-state-msg text-small text-muted">{message}</p>
+</div>
+
+<style>
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4xl) 0;
+  }
+
+  .empty-state-char {
+    color: var(--text-muted);
+    margin-bottom: var(--space-md);
+  }
+
+  .empty-state-msg {
+    font-style: italic;
+  }
+</style>

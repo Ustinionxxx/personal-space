@@ -1,0 +1,74 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Nav from "@/components/Nav.astro";
+import Footer from "@/components/Footer.astro";
+import LifeCard from "@/components/LifeCard.astro";
+import EmptyState from "@/components/EmptyState.astro";
+import { getCollection } from "astro:content";
+
+const records = await getCollection("life");
+---
+
+<BaseLayout title="Life">
+  <Nav />
+  <main class="container" style="padding-top: var(--space-4xl); padding-bottom: var(--space-4xl);">
+    <div class="life-header">
+      <h1 class="text-h1">🌿 Life</h1>
+    </div>
+    <hr class="life-divider" />
+
+    {
+      records.length === 0 ? (
+        <EmptyState character="waiting" message="这里还在等待新的故事" />
+      ) : (
+        <div class="life-grid">
+          {records.map((record) => (
+            <LifeCard
+              record={record}
+              variant={record.data.cardLayout === "featured" ? "featured" : "normal"}
+            />
+          ))}
+        </div>
+      )
+    }
+  </main>
+  <Footer />
+
+  <style>
+    .life-header {
+      margin-bottom: var(--space-lg);
+    }
+
+    .life-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin-bottom: var(--space-xl);
+    }
+
+    .life-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-md);
+      grid-auto-rows: 200px;
+      grid-auto-flow: dense;
+    }
+
+    @media (max-width: 1024px) {
+      .life-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .life-grid {
+        grid-template-columns: 1fr;
+        grid-auto-rows: 240px;
+      }
+
+      .life-card--featured {
+        grid-column: span 1;
+        grid-row: span 2;
+      }
+    }
+  </style>
+</BaseLayout>

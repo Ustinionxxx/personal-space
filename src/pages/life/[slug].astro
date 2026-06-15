@@ -1,0 +1,104 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Nav from "@/components/Nav.astro";
+import Footer from "@/components/Footer.astro";
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+  const records = await getCollection("life");
+  return records.map((r) => ({ params: { slug: r.slug } }));
+}
+
+const { slug } = Astro.params;
+const records = await getCollection("life");
+const record = records.find((r) => r.slug === slug);
+
+if (!record) {
+  return Astro.redirect("/404");
+}
+
+const { title, tags, images, workRef } = record.data;
+const { Content } = await record.render();
+---
+
+<BaseLayout title={title}>
+  <Nav />
+  <main class="container container-narrow" style="padding-top: var(--space-4xl); padding-bottom: var(--space-4xl);">
+    <article>
+      <div class="detail-images">
+        {images.length > 0 ? (
+          images.map((img) => <img src={img} alt={title} loading="lazy" />)
+        ) : (
+          <div class="detail-img-placeholder">
+            <span class="text-muted text-small">图片占位</span>
+          </div>
+        )}
+      </div>
+
+      <h1 class="text-h3" style="margin-top: var(--space-xl);">{title}</h1>
+
+      <div class="detail-content" style="margin-top: var(--space-lg);">
+        <Content />
+      </div>
+
+      <div class="detail-tags" style="margin-top: var(--space-xl);">
+        {tags.map((t) => (
+          <span class="life-tag text-small text-muted">🏷️ {t}</span>
+        ))}
+      </div>
+
+      {workRef && (
+        <p class="text-small" style="margin-top: var(--space-lg);">
+          🛠️ 相关工具：<a href={`/work/${workRef}`} class="detail-crosslink">见 Work 区</a>
+        </p>
+      )}
+    </article>
+  </main>
+  <Footer />
+
+  <style>
+    .detail-images {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-md);
+    }
+
+    .detail-images img {
+      width: 100%;
+      border-radius: var(--radius-image);
+      object-fit: cover;
+      max-height: 60vh;
+    }
+
+    .detail-img-placeholder {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-image);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .detail-content :global(p) {
+      font-size: var(--text-body);
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: var(--space-md);
+    }
+
+    .life-tag {
+      display: inline-block;
+      margin-right: var(--space-md);
+    }
+
+    .detail-crosslink {
+      color: var(--accent);
+      transition: text-decoration 200ms ease;
+    }
+
+    .detail-crosslink:hover {
+      text-decoration: underline;
+    }
+  </style>
+</BaseLayout>

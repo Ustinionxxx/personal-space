@@ -24,7 +24,7 @@ const lifeCollection = defineCollection({
     images: z.array(z.string()).default([]),
     tags: z.array(z.string()).default([]),
     workRef: z.string().optional(),
-    layout: z.enum(["featured", "normal"]).default("normal"),
+    cardLayout: z.enum(["featured", "normal"]).default("normal"),
   }),
 });
 

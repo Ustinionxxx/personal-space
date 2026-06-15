@@ -1,0 +1,96 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  record: CollectionEntry<"life">;
+  variant: "featured" | "normal";
+}
+
+const { record, variant } = Astro.props;
+const { title, tags } = record.data;
+const isFeatured = variant === "featured";
+---
+
+<a href={`/life/${record.slug}`} class={`life-card ${isFeatured ? "life-card--featured" : ""}`}>
+  <div class="life-card-image">
+    <div class="life-card-placeholder">
+      <span class="text-muted text-small">照片占位</span>
+    </div>
+    <div class="life-card-overlay">
+      <p class="life-card-title text-body">{title}</p>
+      <div class="life-card-tags">
+        {tags.map((t) => (
+          <span class="life-card-tag text-caption">{t}</span>
+        ))}
+      </div>
+    </div>
+  </div>
+</a>
+
+<style>
+  .life-card {
+    display: block;
+    cursor: pointer;
+  }
+
+  .life-card--featured {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+
+  .life-card-image {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 200px;
+    border-radius: var(--radius-image);
+    overflow: hidden;
+  }
+
+  .life-card--featured .life-card-image {
+    min-height: 420px;
+  }
+
+  .life-card-placeholder {
+    width: 100%;
+    height: 100%;
+    min-height: inherit;
+    background: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .life-card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: var(--space-lg) var(--space-md) var(--space-md);
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
+    opacity: 0;
+    transition: opacity 300ms ease-out;
+  }
+
+  .life-card:hover .life-card-overlay {
+    opacity: 1;
+  }
+
+  .life-card-title {
+    color: #fff;
+    margin-bottom: var(--space-xs);
+  }
+
+  .life-card-tags {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+  }
+
+  .life-card-tag {
+    color: rgba(255, 255, 255, 0.7);
+    padding: 1px var(--space-sm);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius-pill);
+  }
+</style>
