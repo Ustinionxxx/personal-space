@@ -1,0 +1,19 @@
+---
+import { siteConfig } from "@/config";
+---
+
+<footer class="footer">
+  <p class="footer-text">&copy; {new Date().getFullYear()} {siteConfig.name}</p>
+</footer>
+
+<style>
+  .footer {
+    padding: var(--space-2xl) 0;
+    text-align: center;
+  }
+
+  .footer-text {
+    font-size: var(--text-caption);
+    color: var(--text-muted);
+  }
+</style>

@@ -1,13 +1,15 @@
 ---
-// Home page
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Nav from "@/components/Nav.astro";
+import { siteConfig } from "@/config";
 ---
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Personal Digital Space</title>
-  </head>
-  <body>
-    <h1>Personal Digital Space</h1>
-  </body>
-</html>
+
+<BaseLayout title={siteConfig.name}>
+  <Nav />
+  <main class="container" style="padding-top: var(--space-4xl); text-align: center;">
+    <h1 class="text-display">{siteConfig.name}</h1>
+    <p class="text-body text-secondary" style="margin-top: var(--space-md);">
+      {siteConfig.tagline}
+    </p>
+  </main>
+</BaseLayout>

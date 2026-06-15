@@ -1,0 +1,141 @@
+---
+import { navItems, siteConfig } from "@/config";
+import SunMoonIcon from "@/components/icons/SunMoonIcon.astro";
+
+const currentPath = Astro.url.pathname;
+---
+
+<nav class="nav">
+  <div class="nav-inner container">
+    <a href="/" class="nav-logo">{siteConfig.name}</a>
+
+    <ul class="nav-links">
+      {
+        navItems.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              class={`nav-link ${currentPath === item.href ? "nav-link--active" : ""}`}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <button
+      class="nav-theme-btn"
+      id="theme-toggle"
+      aria-label="Toggle dark mode"
+      type="button"
+    >
+      <span class="nav-theme-icon nav-theme-icon--light">
+        <SunMoonIcon theme="light" size={20} />
+      </span>
+      <span class="nav-theme-icon nav-theme-icon--dark">
+        <SunMoonIcon theme="dark" size={20} />
+      </span>
+    </button>
+  </div>
+</nav>
+
+<script>
+  const btn = document.getElementById("theme-toggle")!;
+  btn.addEventListener("click", () => {
+    const html = document.documentElement;
+    const current = html.getAttribute("data-theme");
+    const next = current === "dark" ? "light" : "dark";
+    html.setAttribute("data-theme", next);
+    localStorage.setItem("theme", next);
+  });
+</script>
+
+<style>
+  .nav {
+    padding: var(--space-lg) 0;
+  }
+
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-logo {
+    font-size: var(--text-h3);
+    font-weight: 400;
+    color: var(--text-primary);
+    transition: color 200ms ease;
+  }
+
+  .nav-logo:hover {
+    color: var(--accent);
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xl);
+  }
+
+  .nav-link {
+    font-size: var(--text-body);
+    color: var(--text-secondary);
+    transition: color 200ms ease;
+    position: relative;
+    padding-bottom: 2px;
+  }
+
+  .nav-link:hover {
+    color: var(--text-primary);
+  }
+
+  .nav-link--active {
+    color: var(--accent);
+  }
+
+  .nav-link--active::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 1px;
+  }
+
+  .nav-theme-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-pill);
+    color: var(--text-secondary);
+    transition: color 200ms ease, background-color 200ms ease;
+  }
+
+  .nav-theme-btn:hover {
+    color: var(--text-primary);
+    background-color: var(--bg-secondary);
+  }
+
+  /* Show/hide correct icon based on theme */
+  [data-theme="light"] .nav-theme-icon--dark,
+  [data-theme="dark"] .nav-theme-icon--light {
+    display: none;
+  }
+
+  /* Mobile nav */
+  @media (max-width: 768px) {
+    .nav-links {
+      gap: var(--space-md);
+    }
+
+    .nav-link {
+      font-size: var(--text-small);
+    }
+  }
+</style>

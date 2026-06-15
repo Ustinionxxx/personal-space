@@ -1,0 +1,144 @@
+/* ===== CSS Reset ===== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: 1.6;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  transition: background-color 300ms ease, color 300ms ease;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+}
+
+/* ===== Design Tokens ===== */
+:root {
+  /* Colors - Light (default) */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F5F5F5;
+  --bg-card: #FFFFFF;
+  --text-primary: #1A1A1A;
+  --text-secondary: #666666;
+  --text-muted: #999999;
+  --accent: #2E6F6A;
+  --accent-light: #3D8B84;
+  --border: #E5E5E5;
+  --shadow: rgba(0, 0, 0, 0.05);
+
+  /* Typography */
+  --font-sans: system-ui, -apple-system, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", "SF Mono", Consolas, monospace;
+
+  /* Font Sizes */
+  --text-display: 48px;
+  --text-h1: 32px;
+  --text-h2: 24px;
+  --text-h3: 20px;
+  --text-body: 16px;
+  --text-small: 14px;
+  --text-caption: 12px;
+
+  /* Spacing (4px base) */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  --space-4xl: 96px;
+
+  /* Radii */
+  --radius-pill: 999px;
+  --radius-card: 12px;
+  --radius-image: 8px;
+
+  /* Max content width */
+  --max-width: 1200px;
+  --max-width-narrow: 720px;
+}
+
+/* ===== Dark Theme ===== */
+[data-theme="dark"] {
+  --bg-primary: #0A0A0A;
+  --bg-secondary: #121212;
+  --bg-card: #1A1A1A;
+  --text-primary: #F0F0F0;
+  --text-secondary: #888888;
+  --text-muted: #555555;
+  --accent: #4A9E96;
+  --accent-light: #5CB5AD;
+  --border: #2A2A2A;
+  --shadow: rgba(0, 0, 0, 0.3);
+}
+
+/* ===== Typography Utility ===== */
+.text-display { font-size: var(--text-display); font-weight: 400; }
+.text-h1     { font-size: var(--text-h1);     font-weight: 400; }
+.text-h2     { font-size: var(--text-h2);     font-weight: 400; }
+.text-h3     { font-size: var(--text-h3);     font-weight: 400; }
+.text-body   { font-size: var(--text-body);   font-weight: 400; }
+.text-small  { font-size: var(--text-small);  font-weight: 400; }
+.text-caption{ font-size: var(--text-caption);font-weight: 400; }
+.text-mono   { font-family: var(--font-mono); }
+
+.text-secondary { color: var(--text-secondary); }
+.text-muted     { color: var(--text-muted); }
+.text-accent    { color: var(--accent); }
+
+/* ===== Container Utility ===== */
+.container {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
+}
+
+.container-narrow {
+  max-width: var(--max-width-narrow);
+}
+
+/* ===== Responsive Font Sizes ===== */
+@media (max-width: 768px) {
+  :root {
+    --text-display: 32px;
+    --text-h1: 24px;
+    --text-h2: 20px;
+    --text-h3: 18px;
+  }
+}
