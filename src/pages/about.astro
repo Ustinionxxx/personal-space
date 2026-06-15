@@ -1,0 +1,98 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Nav from "@/components/Nav.astro";
+import Footer from "@/components/Footer.astro";
+import SecretModal from "@/components/SecretModal.astro";
+
+const aboutContent = {
+  body: `写后端代码，玩 AI 模型。
+闲暇时爬山、逛博物馆、打游戏。
+试图用技术记录生活，
+也试图让生活成为技术的灵感来源。`,
+  skills: ["后端开发", "AI 大模型"],
+};
+---
+
+<BaseLayout title="About">
+  <Nav />
+  <main class="about-page">
+    <div class="about-bg"></div>
+    <div class="about-content container container-narrow">
+      <h1 class="text-h1">关于我</h1>
+      <hr class="about-divider" />
+
+      <div class="about-body text-body">
+        {aboutContent.body.split("\n").map((line) => (
+          <p>{line}</p>
+        ))}
+      </div>
+
+      <h2 class="text-h3" style="margin-top: var(--space-xl); margin-bottom: var(--space-md);">
+        技术方向
+      </h2>
+      <ul class="about-skills text-body text-secondary">
+        {aboutContent.skills.map((s) => <li>{s}</li>)}
+      </ul>
+    </div>
+
+    <div class="about-footer container container-narrow">
+      <Footer />
+      <SecretModal />
+    </div>
+  </main>
+
+  <style>
+    .about-page {
+      position: relative;
+      padding-top: var(--space-4xl);
+      padding-bottom: var(--space-4xl);
+      min-height: 100vh;
+    }
+
+    .about-bg {
+      position: absolute;
+      inset: 0;
+      background: var(--bg-secondary);
+      opacity: 0.5;
+      z-index: -1;
+    }
+
+    [data-theme="dark"] .about-bg {
+      opacity: 0.3;
+    }
+
+    .about-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .about-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: var(--space-lg) 0 var(--space-xl);
+    }
+
+    .about-body p {
+      margin-bottom: var(--space-sm);
+      color: var(--text-primary);
+      line-height: 1.8;
+    }
+
+    .about-skills {
+      list-style: disc;
+      padding-left: var(--space-lg);
+    }
+
+    .about-skills li {
+      margin-bottom: var(--space-xs);
+    }
+
+    .about-footer {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: var(--space-3xl);
+    }
+  </style>
+</BaseLayout>
