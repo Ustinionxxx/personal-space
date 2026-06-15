@@ -1,0 +1,88 @@
+---
+import type { CollectionEntry } from "astro:content";
+import TagPill from "@/components/TagPill.astro";
+
+interface Props {
+  project: CollectionEntry<"work">;
+}
+
+const { project } = Astro.props;
+const { title, description, tech, cover } = project.data;
+---
+
+<a href={`/work/${project.slug}`} class="work-card">
+  <div class="work-card-cover">
+    {
+      cover ? (
+        <img src={cover} alt={title} loading="lazy" />
+      ) : (
+        <div class="work-card-placeholder">
+          <span class="text-muted text-small">封面占位</span>
+        </div>
+      )
+    }
+  </div>
+  <div class="work-card-info">
+    <h3 class="work-card-title text-h3">{title}</h3>
+    <p class="work-card-desc text-body text-secondary">{description}</p>
+    <div class="work-card-tags">
+      {tech.map((t) => <TagPill label={t} />)}
+    </div>
+  </div>
+</a>
+
+<style>
+  .work-card {
+    display: grid;
+    grid-template-columns: 40% 60%;
+    gap: var(--space-lg);
+    align-items: center;
+    cursor: pointer;
+    padding: var(--space-md) 0;
+    border-bottom: 1px solid var(--border);
+    text-decoration: none;
+  }
+
+  .work-card:first-of-type {
+    border-top: 1px solid var(--border);
+  }
+
+  .work-card-cover img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: var(--radius-image);
+  }
+
+  .work-card-placeholder {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-image);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .work-card-title {
+    color: var(--text-primary);
+    margin-bottom: var(--space-xs);
+  }
+
+  .work-card-desc {
+    margin-bottom: var(--space-sm);
+  }
+
+  .work-card-tags {
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 768px) {
+    .work-card {
+      grid-template-columns: 1fr;
+      gap: var(--space-md);
+    }
+  }
+</style>

@@ -1,0 +1,26 @@
+---
+interface Props {
+  label: string;
+}
+
+const { label } = Astro.props;
+---
+
+<span class="tag-pill">{label}</span>
+
+<style>
+  .tag-pill {
+    display: inline-block;
+    padding: 2px var(--space-sm);
+    font-size: var(--text-small);
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-pill);
+    transition: transform 200ms ease;
+  }
+
+  .tag-pill:hover {
+    transform: scale(1.05);
+  }
+</style>

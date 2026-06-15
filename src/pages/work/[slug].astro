@@ -1,0 +1,164 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Nav from "@/components/Nav.astro";
+import Footer from "@/components/Footer.astro";
+import TagPill from "@/components/TagPill.astro";
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+  const projects = await getCollection("work");
+  return projects.map((p) => ({ params: { slug: p.slug } }));
+}
+
+const { slug } = Astro.params;
+const projects = await getCollection("work");
+const project = projects.find((p) => p.slug === slug);
+
+if (!project) {
+  return Astro.redirect("/404");
+}
+
+const { title, description, tech, links, lifeRef } = project.data;
+const { Content } = await project.render();
+---
+
+<BaseLayout title={title} description={description}>
+  <Nav />
+  <main class="container container-narrow" style="padding-top: var(--space-4xl); padding-bottom: var(--space-4xl);">
+    <article>
+      <header class="detail-header">
+        <h1 class="text-h1">{title}</h1>
+        <p class="text-body text-secondary" style="margin-top: var(--space-sm);">
+          {description}
+        </p>
+      </header>
+
+      <hr class="detail-divider" />
+
+      <div class="detail-content">
+        <Content />
+      </div>
+
+      <hr class="detail-divider" />
+
+      <div class="detail-meta">
+        <div class="detail-tags">
+          <span class="text-small text-muted">技术栈：</span>
+          <div style="display: flex; gap: var(--space-xs); flex-wrap: wrap; margin-top: var(--space-xs);">
+            {tech.map((t) => <TagPill label={t} />)}
+          </div>
+        </div>
+
+        {links && (
+          <div class="detail-links" style="margin-top: var(--space-lg);">
+            {links.github && (
+              <a href={links.github} target="_blank" rel="noopener noreferrer" class="detail-link">
+                🔗 GitHub
+              </a>
+            )}
+            {links.demo && (
+              <a href={links.demo} target="_blank" rel="noopener noreferrer" class="detail-link">
+                🔗 在线演示
+              </a>
+            )}
+          </div>
+        )}
+
+        {lifeRef && (
+          <p class="text-small" style="margin-top: var(--space-lg);">
+            💡 灵感来自 <a href={`/life/${lifeRef}`} class="detail-crosslink">Life 区记录</a>
+          </p>
+        )}
+      </div>
+    </article>
+  </main>
+  <Footer />
+
+  <style>
+    .detail-header {
+      margin-bottom: var(--space-lg);
+    }
+
+    .detail-divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: var(--space-xl) 0;
+    }
+
+    .detail-content :global(h2) {
+      font-size: var(--text-h2);
+      font-weight: 400;
+      color: var(--text-primary);
+      margin: var(--space-lg) 0 var(--space-md);
+    }
+
+    .detail-content :global(h3) {
+      font-size: var(--text-h3);
+      font-weight: 400;
+      color: var(--text-primary);
+      margin: var(--space-md) 0 var(--space-sm);
+    }
+
+    .detail-content :global(p) {
+      font-size: var(--text-body);
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: var(--space-md);
+    }
+
+    .detail-content :global(ul), .detail-content :global(ol) {
+      list-style: disc;
+      padding-left: var(--space-lg);
+      color: var(--text-secondary);
+      margin-bottom: var(--space-md);
+    }
+
+    .detail-content :global(li) {
+      margin-bottom: var(--space-xs);
+    }
+
+    .detail-content :global(code) {
+      font-family: var(--font-mono);
+      font-size: var(--text-small);
+      background: var(--bg-secondary);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .detail-content :global(pre) {
+      background: var(--bg-secondary);
+      padding: var(--space-md);
+      border-radius: var(--radius-image);
+      overflow-x: auto;
+      margin-bottom: var(--space-md);
+    }
+
+    .detail-content :global(pre code) {
+      background: none;
+      padding: 0;
+    }
+
+    .detail-link {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      color: var(--accent);
+      font-size: var(--text-body);
+      margin-right: var(--space-lg);
+      transition: text-decoration 200ms ease;
+    }
+
+    .detail-link:hover {
+      text-decoration: underline;
+    }
+
+    .detail-crosslink {
+      color: var(--accent);
+      transition: text-decoration 200ms ease;
+    }
+
+    .detail-crosslink:hover {
+      text-decoration: underline;
+    }
+  </style>
+</BaseLayout>
