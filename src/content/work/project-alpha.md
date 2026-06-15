@@ -5,6 +5,7 @@ tech: ["Go", "TypeScript", "OpenAPI"]
 links:
   github: "https://github.com/Ustinionxxx/project-alpha"
   demo: "https://alpha.example.com"
+lifeRef: "record-one"
 ---
 
 ## 项目概述
