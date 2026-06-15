@@ -1,15 +1,90 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Nav from "@/components/Nav.astro";
+import Character from "@/components/Character.astro";
+import GitHubIcon from "@/components/icons/GitHubIcon.astro";
+import EmailIcon from "@/components/icons/EmailIcon.astro";
 import { siteConfig } from "@/config";
 ---
 
-<BaseLayout title={siteConfig.name}>
+<BaseLayout title={siteConfig.name} description={siteConfig.tagline}>
   <Nav />
-  <main class="container" style="padding-top: var(--space-4xl); text-align: center;">
-    <h1 class="text-display">{siteConfig.name}</h1>
-    <p class="text-body text-secondary" style="margin-top: var(--space-md);">
-      {siteConfig.tagline}
-    </p>
+  <main class="home">
+    <div class="home-hero">
+      <div class="home-character">
+        <Character id="hero" size={120} animate={true} />
+      </div>
+
+      <h1 class="home-name text-display">{siteConfig.name}</h1>
+
+      <p class="home-tagline text-body text-secondary">
+        {siteConfig.tagline}
+      </p>
+
+      <div class="home-social">
+        <a
+          href={siteConfig.github}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="home-social-link"
+          aria-label="GitHub"
+        >
+          <GitHubIcon size={24} />
+        </a>
+        <a
+          href={`mailto:${siteConfig.email}`}
+          class="home-social-link"
+          aria-label="Email"
+        >
+          <EmailIcon size={24} />
+        </a>
+      </div>
+    </div>
   </main>
+
+  <style>
+    .home {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 200px);
+    }
+
+    .home-hero {
+      text-align: center;
+    }
+
+    .home-character {
+      color: var(--text-primary);
+      margin-bottom: var(--space-lg);
+    }
+
+    .home-name {
+      color: var(--text-primary);
+      margin-bottom: var(--space-md);
+    }
+
+    .home-tagline {
+      margin-bottom: var(--space-xl);
+      font-style: italic;
+    }
+
+    .home-social {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-lg);
+    }
+
+    .home-social-link {
+      color: var(--text-secondary);
+      transition: color 200ms ease;
+      display: flex;
+      align-items: center;
+    }
+
+    .home-social-link:hover {
+      color: var(--text-primary);
+    }
+  </style>
 </BaseLayout>
