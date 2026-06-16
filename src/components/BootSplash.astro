@@ -1,0 +1,284 @@
+---
+interface Props {
+  tagline: string;
+}
+
+const { tagline } = Astro.props;
+---
+
+<div id="bootScreen" class="boot-container" data-tagline={tagline}>
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="window-controls">
+        <div class="control close"></div>
+        <div class="control minimize"></div>
+        <div class="control maximize"></div>
+      </div>
+      <div class="terminal-title">USTINION@BOOT:~</div>
+    </div>
+    <div class="terminal-body" id="bootLog">
+    </div>
+  </div>
+  <div class="scan-line"></div>
+  <div class="vignette"></div>
+</div>
+
+<script>
+  const bootLogContainer = document.getElementById('bootLog')!;
+  const bootScreenDiv = document.getElementById('bootScreen')!;
+
+  const bootLines = [
+    { text: "Booting XING_OS v1.0 ...", delay: 200 },
+    { text: "UEFI Firmware (rev 0x2026)", delay: 180 },
+    { text: "Loading kernel modules...", delay: 220 },
+    { text: "[ OK ] Started System Logger Daemon.", delay: 150 },
+    { text: "[ OK ] Started D-Bus System Message Bus.", delay: 180 },
+    { text: "[ OK ] Reached target Multi-User System.", delay: 200 },
+    { text: "Starting network interface: eth0 ...", delay: 260 },
+    { text: "[ OK ] DHCP: IPV4 Address 172.24.0.1/24", delay: 220 },
+    { text: "Starting user services for 'xingsijia' ...", delay: 190 },
+    { text: "[ OK ] Started Display Manager.", delay: 230 },
+    { text: "", delay: 80 },
+    { text: "   ██╗  ██╗██╗███╗   ██╗ ██████╗", delay: 100 },
+    { text: "   ╚██╗██╔╝██║████╗  ██║██╔════╝", delay: 100 },
+    { text: "    ╚███╔╝ ██║██╔██╗ ██║██║  ███╗", delay: 100 },
+    { text: "    ██╔██╗ ██║██║╚██╗██║██║   ██║", delay: 100 },
+    { text: "   ██╔╝ ██╗██║██║ ╚████║╚██████╔╝", delay: 100 },
+    { text: "   ╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝", delay: 120 },
+    { text: "", delay: 60 },
+    { text: "$ whoami", delay: 280 },
+    { text: "> xingsijia / Ustinionxxx", delay: 200 },
+    { text: "$ cat tagline.txt", delay: 300 },
+    { text: `> ${bootScreenDiv.dataset.tagline || "一个试图把生活变成代码注释的人类"}`, delay: 250 },
+    { text: "", delay: 100 },
+    { text: "System ready. Entering personal space...", delay: 320 },
+    { text: "Press any key to enter or wait...", delay: 200, isLastMsg: true }
+  ];
+
+  let timeoutIds: ReturnType<typeof setTimeout>[] = [];
+  let cursorLineElement: HTMLElement | null = null;
+
+  function addBootLine(content: string) {
+    const lineDiv = document.createElement('div');
+    lineDiv.className = 'line';
+    lineDiv.textContent = content;
+    bootLogContainer.appendChild(lineDiv);
+    bootLogContainer.scrollTop = bootLogContainer.scrollHeight;
+  }
+
+  function addCursorWaitingLine() {
+    if (cursorLineElement) cursorLineElement.remove();
+    const cursorWrapper = document.createElement('div');
+    cursorWrapper.className = 'cursor-line';
+    const promptSpan = document.createElement('span');
+    promptSpan.className = 'prompt-symbol';
+    promptSpan.textContent = 'xing@system:~$';
+    const cursorSpan = document.createElement('span');
+    cursorSpan.className = 'blinking-cursor';
+    cursorWrapper.appendChild(promptSpan);
+    cursorWrapper.appendChild(cursorSpan);
+    bootLogContainer.appendChild(cursorWrapper);
+    cursorLineElement = cursorWrapper;
+  }
+
+  function finishBoot() {
+    bootScreenDiv.style.transition = 'opacity 0.9s ease-in-out';
+    bootScreenDiv.style.opacity = '0';
+    setTimeout(() => {
+      bootScreenDiv.remove();
+      document.body.style.overflow = '';
+    }, 850);
+  }
+
+  function startBootAnimation() {
+    let cumulativeDelay = 0;
+    for (const line of bootLines) {
+      const timeoutId = setTimeout(() => {
+        if (line.text !== undefined && line.text !== "") {
+          addBootLine(line.text);
+        } else if (line.text === "") {
+          const emptyLine = document.createElement('div');
+          emptyLine.className = 'line';
+          emptyLine.textContent = '';
+          bootLogContainer.appendChild(emptyLine);
+        }
+        if (line.isLastMsg) {
+          setTimeout(() => {
+            addCursorWaitingLine();
+            setTimeout(() => finishBoot(), 2000);
+          }, 400);
+        }
+      }, cumulativeDelay);
+      timeoutIds.push(timeoutId);
+      cumulativeDelay += line.delay;
+    }
+  }
+
+  function skipBoot() {
+    for (const id of timeoutIds) clearTimeout(id);
+    timeoutIds = [];
+    finishBoot();
+  }
+
+  window.addEventListener('keydown', skipBoot, { once: true });
+  window.addEventListener('click', skipBoot, { once: true });
+
+  document.body.style.overflow = 'hidden';
+  startBootAnimation();
+</script>
+
+<style is:global>
+  .boot-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #0a0c10;
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 1;
+  }
+
+  .terminal {
+    width: 90%;
+    max-width: 880px;
+    background: #03060c;
+    border-radius: 12px;
+    box-shadow: 0 20px 35px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(60, 255, 120, 0.15);
+    overflow: hidden;
+    border: 1px solid #1e3a2f;
+  }
+
+  .terminal-bar {
+    background: #11181f;
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #2a4a3a;
+  }
+
+  .window-controls {
+    display: flex;
+    gap: 8px;
+  }
+
+  .control {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+
+  .close { background: #ff5f56; }
+  .minimize { background: #ffbd2e; }
+  .maximize { background: #27c93f; }
+
+  .terminal-title {
+    flex: 1;
+    text-align: center;
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: #8bc34a;
+    font-family: monospace;
+    text-shadow: 0 0 2px #6f9e37;
+  }
+
+  .terminal-body {
+    padding: 32px 28px;
+    background: #03060c;
+    min-height: 400px;
+    max-height: 70vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-family: 'Fira Code', 'Courier New', monospace;
+  }
+
+  .line {
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 1.05rem;
+    letter-spacing: 0.5px;
+    line-height: 1.5;
+    color: #b7ffb1;
+    text-shadow: 0 0 2px #2b8040;
+    opacity: 0;
+    transform: translateY(6px);
+    animation: bootFadeSlideUp 0.28s forwards;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .cursor-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .prompt-symbol {
+    color: #6eff8e;
+    font-weight: bold;
+    font-size: 1.05rem;
+    font-family: 'Fira Code', 'Courier New', monospace;
+  }
+
+  .blinking-cursor {
+    background-color: #8effa0;
+    width: 10px;
+    height: 1.4rem;
+    display: inline-block;
+    animation: bootBlink 1s step-end infinite;
+    box-shadow: 0 0 4px #a0ffc0;
+  }
+
+  .scan-line {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10001;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 255, 0, 0.02) 0px,
+      rgba(0, 255, 0, 0.02) 2px,
+      transparent 2px,
+      transparent 6px
+    );
+    opacity: 0.5;
+  }
+
+  .vignette {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, transparent 65%, rgba(0,0,0,0.5) 100%);
+    pointer-events: none;
+    z-index: 10002;
+  }
+
+  @keyframes bootFadeSlideUp {
+    0% { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes bootBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  @media (max-width: 600px) {
+    .terminal-body {
+      padding: 20px 16px;
+    }
+    .line {
+      font-size: 0.8rem;
+    }
+  }
+</style>

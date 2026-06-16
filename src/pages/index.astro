@@ -4,10 +4,12 @@ import Nav from "@/components/Nav.astro";
 import Character from "@/components/Character.astro";
 import GitHubIcon from "@/components/icons/GitHubIcon.astro";
 import EmailIcon from "@/components/icons/EmailIcon.astro";
+import BootSplash from "@/components/BootSplash.astro";
 import { siteConfig } from "@/config";
 ---
 
 <BaseLayout title={siteConfig.name} description={siteConfig.tagline}>
+  <BootSplash tagline={siteConfig.tagline} />
   <Nav />
   <main class="home">
     <div class="home-hero">
