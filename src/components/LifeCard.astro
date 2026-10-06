@@ -1,20 +1,26 @@
 ---
-import { formatDate, type LifeRecord } from '@/lib/content';
+import type { LifeRecord } from '@/lib/content';
+import { localeFromPath, localizedPath, formatDate, messages } from '@/lib/i18n';
+import TranslationNote from './TranslationNote.astro';
 interface Props { record: LifeRecord }
 const { record } = Astro.props;
-const href = `/life/${record.slug}`;
+const locale = localeFromPath(Astro.url.pathname);
+const t = messages[locale];
+const dateLabel = formatDate(record.date, locale);
+const href = localizedPath(`/life/${record.slug}`, locale);
 ---
-<article class="life-card" aria-label={record.title || `${formatDate(record.date)}的记录`}>
-  <a href={href} class="record-date"><time datetime={record.date}>{formatDate(record.date)}</time><span aria-hidden="true"> ↗</span></a>
-  {record.title && <h3 class="text-h3"><a href={href}>{record.title}</a></h3>}
-  {record.html && <div class="prose record-body" set:html={record.html} />}
+<article class="life-card" aria-label={record.title || dateLabel + t.record}>
+  <a href={href} class="record-date"><time datetime={record.date}>{dateLabel}</time><span aria-hidden="true"> ↗</span></a>
+  {record.title && <h3 class="text-h3" lang={record.titleLang}><a href={href}>{record.title}</a></h3>}
+  <TranslationNote show={record.translationFallback} />
+  {record.html && <div class="prose record-body" lang={record.bodyLang} set:html={record.html} />}
   {record.images.length > 0 && <div class:list={['record-photos', { 'record-photos--multiple': record.images.length > 1 }]}>
-    {record.images.slice(0, 3).map((photo, index) => <a href={href} aria-label={`查看${record.title || formatDate(record.date) + '的照片'}，第 ${index + 1} 张`}>
-      <img src={photo.src} width={photo.width} height={photo.height} alt={photo.alt || photo.caption || `照片 ${index + 1}`} loading="lazy" decoding="async" />
+    {record.images.slice(0, 3).map((photo, index) => <a href={href} aria-label={`${t.viewPhoto} ${index + 1} · ${dateLabel}`}>
+      <img src={photo.src} width={photo.width} height={photo.height} lang={photo.alt ? photo.altLang : photo.caption ? photo.captionLang : undefined} alt={photo.alt || photo.caption || `${t.photo} ${index + 1}`} loading="lazy" decoding="async" />
     </a>)}
   </div>}
-  {record.images.length > 3 && <a class="text-link text-small" href={href}>查看全部 {record.images.length} 张照片</a>}
-  {record.tags.length > 0 && <ul class="tag-list" aria-label="标签">{record.tags.map(tag => <li>#{tag}</li>)}</ul>}
+  {record.images.length > 3 && <a class="text-link text-small" href={href}>{t.allPhotos} ({record.images.length})</a>}
+  {record.tags.length > 0 && <ul class="tag-list" aria-label={t.tags}>{record.tags.map(tag => <li>#{tag}</li>)}</ul>}
 </article>
 <style>
   .life-card { padding: 28px 0 32px; border-top: 1px solid var(--border); min-width: 0; }

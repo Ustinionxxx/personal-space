@@ -78,7 +78,16 @@ content:
             options: { media: images }
           - { name: caption, label: 图片说明（可不填）, type: string }
           - { name: alt, label: 给看不到图片的人描述一下画面（可不填）, type: string }
+          - { name: captionEn, label: English 图片说明（可不填）, type: string }
+          - { name: altEn, label: English 图片描述（可不填）, type: string }
       - { name: tags, label: 标签（可不填）, type: string, list: true }
+      - name: english
+        label: English（可选）
+        type: object
+        description: 不影响中文发布。繁体由原文转换；英语未填写时保留原文并标注。
+        fields:
+          - { name: title, label: English 标题（可不填）, type: string }
+          - { name: body, label: English 正文（可不填）, component: writing }
       - name: workRef
         label: 相关折腾（可不选）
         type: reference
@@ -116,6 +125,14 @@ content:
         description: 自由写。请交代它是什么、你实际参与了什么；使用开源项目时注明来源。
       - { name: cover, label: 项目图片（可不传）, type: image, options: { media: images } }
       - { name: tech, label: 用到的技术（可不填）, type: string, list: true }
+      - name: english
+        label: English（可选）
+        type: object
+        description: 英语未填写时保留对应中文原文；不会自动生成或编造项目经历。
+        fields:
+          - { name: title, label: English 项目名称, type: string }
+          - { name: description, label: English 一句话介绍, type: text }
+          - { name: body, label: English 正文, component: writing }
       - name: links
         label: 相关链接（可不填）
         type: object
@@ -138,6 +155,12 @@ content:
       - { name: status, component: publication }
       - { name: body, component: writing }
 
+      - name: english
+        label: English（可选）
+        type: object
+        fields:
+          - { name: body, label: English 个人介绍, component: writing }
+
   - name: home
     label: 首页设置
     type: file
@@ -149,6 +172,13 @@ content:
       - { name: name, label: 名字, type: string, required: true }
       - { name: intro, label: 简短自我介绍, type: text }
       - { name: now, label: 最近在……（只填后半句，留空隐藏）, type: string }
+      - name: english
+        label: English（可选）
+        type: object
+        fields:
+          - { name: name, label: English 名字（留空使用原名）, type: string }
+          - { name: intro, label: English 简短介绍, type: text }
+          - { name: now, label: English 最近在……（填后半句）, type: string }
       - name: featuredWork
         label: 首页选中的项目（可不选）
         type: reference

@@ -1,5 +1,7 @@
 # Personal Space · 个人数字空间
 
+[简体中文](README.md) · [繁體中文](README.zh-TW.md) · [English](README.en.md)
+
 [![代码检查](https://github.com/Ustinionxxx/personal-space/actions/workflows/check.yml/badge.svg?branch=main)](https://github.com/Ustinionxxx/personal-space/actions/workflows/check.yml)
 [![Astro](https://img.shields.io/badge/Astro-7-BC52EE?logo=astro&logoColor=white)](https://astro.build/)
 [![Node.js](https://img.shields.io/badge/Node.js-%E2%89%A522.12-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
@@ -16,7 +18,7 @@
 
 [![个人数字空间首页：邢思佳、青绿色小人和最近留下的生活记录](docs/images/home-preview.webp)](https://personal-space-ustinionxxx.pages.dev/)
 
-*当前线上首页的暗色主题。*
+*简体首页预览，包含新的语言切换入口。*
 
 ## 可以留下什么
 
@@ -32,6 +34,9 @@
 - **链接保持稳定**：记录使用独立 ID，修改标题不会改变原来的地址。
 - **读起来轻一点**：支持手机布局、亮暗主题、键盘导航与减少动画设置；终端开场可以主动播放、跳过或按 Esc 关闭。
 - **先留给自己，再决定公开**：网页后台支持私密草稿，网站只展示已发布内容。
+- **三种语言**：简体中文保留原链接，繁體中文与 English 使用独立页面；切换时保留当前记录，导航、日期、空页面提示和终端彩蛋随语言变化。
+
+繁体内容由简体原文在构建时转换。英语正文、标题、首页介绍和照片说明可在后台的 English 字段中填写；留空仍可正常发布，英语页面会保留原文并标注。不会把内容发送给外部翻译服务。
 
 ## 日常更新
 
@@ -108,7 +113,9 @@ src/
 ├── components/       导航、小人、图文记录与项目组件
 ├── layouts/          页面布局
 ├── lib/content.ts    读取处理后的已发布内容
+├── lib/i18n.ts       界面文案、日期与语言链接
 ├── pages/            首页、生活、折腾与关于
+├── views/            三种语言共用的页面视图
 └── styles/           全局样式与主题
 scripts/              内容处理、构建、产物检查与部署
 content-template/     私有内容仓库与中文后台配置模板
@@ -116,7 +123,7 @@ tests/                内容隔离及构建测试
 docs/                 编辑指南、部署说明与页面预览
 ```
 
-前台使用 **Astro 7 + TypeScript**，内容使用 **Markdown**，图片由 **Sharp** 处理；网页编辑使用 **Pages CMS**，自动发布使用 **GitHub Actions + Cloudflare Pages**。
+前台使用 **Astro 7 + TypeScript**，内容使用 **Markdown**，图片由 **Sharp** 处理，繁简转换使用 **OpenCC**；网页编辑使用 **Pages CMS**，自动发布使用 **GitHub Actions + Cloudflare Pages**。
 
 ## 参考与借鉴
 

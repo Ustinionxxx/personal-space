@@ -1,21 +1,26 @@
 ---
-import { navItems, siteConfig } from "@/config";
+import { getContent } from '@/lib/content';
+import { localeFromPath, localizedPath, unlocalizedPath, locales, localeLabels, languageTags, messages } from '@/lib/i18n';
 import SunMoonIcon from "@/components/icons/SunMoonIcon.astro";
 
-const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
+const locale = localeFromPath(Astro.url.pathname);
+const t = messages[locale];
+const siteConfig = getContent(locale).home;
+const navItems = [{ label: t.home, href: '/' }, { label: t.work, href: '/work' }, { label: t.life, href: '/life' }, { label: t.about, href: '/about' }];
+const currentPath = unlocalizedPath(Astro.url.pathname).replace(/\/$/, '') || '/';
 const isActive = (href: string) => href === '/' ? currentPath === '/' : currentPath === href || currentPath.startsWith(href + '/');
 ---
 
-<nav class="nav" aria-label="主导航">
+<nav class="nav" aria-label={t.mainNav}>
   <div class="nav-inner container">
-    <a href="/" class="nav-logo">{siteConfig.name}</a>
+    <a href={localizedPath('/', locale)} class="nav-logo">{siteConfig.name}</a>
 
     <ul class="nav-links">
       {
         navItems.map((item) => (
           <li>
             <a
-              href={item.href}
+              href={localizedPath(item.href, locale)}
               class={`nav-link ${isActive(item.href) ? "nav-link--active" : ""}`}
               aria-current={isActive(item.href) ? 'page' : undefined}
             >
@@ -26,19 +31,27 @@ const isActive = (href: string) => href === '/' ? currentPath === '/' : currentP
       }
     </ul>
 
+    <div class="nav-controls">
+    <details class="language-picker" id="language-picker">
+      <summary aria-label={t.language}>{localeLabels[locale]} <span aria-hidden="true">⌄</span></summary>
+      <ul class="language-options">
+        {locales.map(language => <li><a data-language-link href={localizedPath(Astro.url.pathname, language)} lang={languageTags[language]} hreflang={languageTags[language]} aria-current={language === locale ? 'true' : undefined}>{localeLabels[language]}</a></li>)}
+      </ul>
+    </details>
     <button
       class="nav-theme-btn"
       id="theme-toggle"
-      aria-label="切换亮暗主题"
+      aria-label={t.theme}
       type="button"
     >
-      <span class="nav-theme-icon nav-theme-icon--light">
+      <span class="nav-theme-icon nav-theme-icon--light" aria-hidden="true">
         <SunMoonIcon theme="light" size={20} />
       </span>
-      <span class="nav-theme-icon nav-theme-icon--dark">
+      <span class="nav-theme-icon nav-theme-icon--dark" aria-hidden="true">
         <SunMoonIcon theme="dark" size={20} />
       </span>
     </button>
+    </div>
   </div>
 </nav>
 
@@ -53,6 +66,17 @@ const isActive = (href: string) => href === '/' ? currentPath === '/' : currentP
     btn.setAttribute('aria-pressed', String(next === 'dark'));
   });
   btn.setAttribute('aria-pressed', String(document.documentElement.getAttribute('data-theme') === 'dark'));
+  const picker = document.querySelector<HTMLDetailsElement>('#language-picker')!;
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && picker.open) { picker.open = false; picker.querySelector('summary')?.focus(); }
+  });
+  document.addEventListener('click', event => {
+    if (event.target instanceof Node && !picker.contains(event.target)) picker.open = false;
+  });
+  document.querySelectorAll<HTMLAnchorElement>('[data-language-link]').forEach(link => {
+    link.search = window.location.search;
+    link.hash = window.location.hash;
+  });
 </script>
 
 <style>
@@ -66,6 +90,15 @@ const isActive = (href: string) => href === '/' ? currentPath === '/' : currentP
     align-items: center;
     justify-content: space-between;
   }
+  .nav-controls { display: flex; align-items: center; gap: 8px; }
+  .language-picker { position: relative; font-size: var(--text-small); white-space: nowrap; }
+  summary { cursor: pointer; padding: 10px 8px; color: var(--text-secondary); list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary:hover { color: var(--accent); }
+  .language-options { position: absolute; z-index: 10; top: 100%; right: 0; min-width: 140px; padding: 6px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgb(0 0 0 / .1); }
+  .language-options a { display: block; padding: 10px 12px; border-radius: 4px; }
+  .language-options a:hover { background: var(--bg-secondary); }
+  .language-options a[aria-current] { color: var(--accent); }
 
   .nav-logo {
     white-space: nowrap;
@@ -137,8 +170,10 @@ const isActive = (href: string) => href === '/' ? currentPath === '/' : currentP
 
   /* Mobile nav */
   @media (max-width: 768px) {
+    .nav-inner { flex-wrap: wrap; }
     .nav-logo { font-size: 16px; }
     .nav-links {
+      order: 3; width: 100%; justify-content: space-between;
       gap: var(--space-md);
     }
 

@@ -1,9 +1,13 @@
-<button class="text-link text-small" id="play-boot" type="button" aria-haspopup="dialog" hidden>播放开场 <span aria-hidden="true">⌘</span></button>
+---
+import { localeFromPath, messages } from '@/lib/i18n';
+const t = messages[localeFromPath(Astro.url.pathname)];
+---
+<button class="text-link text-small" id="play-boot" type="button" aria-haspopup="dialog" hidden>{t.boot} <span aria-hidden="true">⌘</span></button>
 <dialog id="boot-dialog" aria-labelledby="boot-title">
-  <div class="terminal-bar"><h2 id="boot-title">personal-space / boot</h2><button id="skip-boot" type="button" autofocus>跳过 / 关闭 ×</button></div>
-  <pre id="boot-log" aria-live="off"></pre>
-  <label class="motion-option"><input type="checkbox" id="reduce-motion" /> 减少动画</label>
-  <p class="terminal-hint">按 Esc 或点击“跳过 / 关闭”返回。</p>
+  <div class="terminal-bar"><h2 id="boot-title">personal-space / boot</h2><button id="skip-boot" type="button" autofocus>{t.bootClose}</button></div>
+  <pre id="boot-log" aria-live="off" data-lines={JSON.stringify(t.bootLines)}></pre>
+  <label class="motion-option"><input type="checkbox" id="reduce-motion" /> {t.reduceMotion}</label>
+  <p class="terminal-hint">{t.bootHint}</p>
 </dialog>
 <script>
   const trigger = document.querySelector<HTMLButtonElement>('#play-boot')!;
@@ -14,7 +18,7 @@
   const reduce = document.querySelector<HTMLInputElement>('#reduce-motion')!;
   reduce.checked = document.documentElement.hasAttribute('data-reduced-motion');
   reduce.disabled = motion.matches;
-  const lines = ['$ open personal-space', '[ok] 文字', '[ok] 照片', '[ok] 还没完成的想法', '', '空间已打开。', '$ _'];
+  const lines: string[] = JSON.parse(log.dataset.lines!);
   let timers: ReturnType<typeof setTimeout>[] = [];
   let previousOverflow = '';
   function clearTimers() { timers.forEach(clearTimeout); timers = []; }

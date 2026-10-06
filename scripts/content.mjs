@@ -11,6 +11,7 @@ import remarkRehype from 'remark-rehype';
 import rehypeSanitize from 'rehype-sanitize';
 import rehypeStringify from 'rehype-stringify';
 import { visit } from 'unist-util-visit';
+import { contentLocales, htmlLanguage, toTraditional, translatedField, localContentLink } from './localization.mjs';
 
 export const defaultHome = {
   name: '邢思佳', intro: '毕竟网站已经建了，总得往里放点本人。',
@@ -25,10 +26,11 @@ const date = text.regex(/^\d{4}-\d{2}-\d{2}$/).refine(v => {
   return !Number.isNaN(d.valueOf()) && d.toISOString().slice(0, 10) === v;
 }, '请填写有效的记录日期');
 const url = optionalText.refine(v => !v || /^https?:\/\//.test(v) && URL.canParse(v), '链接须以 https:// 或 http:// 开头');
-const photoSchema = z.object({ src: text.min(1), alt: optionalText, caption: optionalText });
+const englishWriting = z.object({ title: optionalText, body: optionalText, description: optionalText }).nullish();
+const photoSchema = z.object({ src: text.min(1), alt: optionalText, caption: optionalText, altEn: optionalText, captionEn: optionalText });
 const baseSchema = z.object({
   id: identifier, permalink: optionalText.refine(v => !v || identifier.safeParse(v).success),
-  title: optionalText, date, body: optionalText,
+  title: optionalText, date, body: optionalText, english: englishWriting,
 });
 const lifeSchema = baseSchema.extend({
   images: z.array(photoSchema).nullish().transform(v => v ?? []), tags: strings, workRef: optionalText,
@@ -41,7 +43,9 @@ const workSchema = baseSchema.extend({
 const homeSchema = z.object({
   name: text.min(1), intro: optionalText, now: optionalText, github: url,
   email: optionalText.refine(v => !v || z.string().email().safeParse(v).success), featuredWork: optionalText,
+  english: z.object({ name: optionalText, intro: optionalText, now: optionalText }).nullish(),
 });
+const aboutSchema = z.object({ body: optionalText, english: z.object({ body: optionalText }).nullish() });
 
 // Never return private values in validation errors or build logs.
 function validate(schema, data, label) {
@@ -109,8 +113,16 @@ function mediaProcessor(root, output) {
     return value;
   };
 }
-async function markdown(body, image) {
+async function markdown(body, image, locale = 'zh-cn') {
   const tree = unified().use(remarkParse).use(remarkGfm).parse(body);
+  visit(tree, node => {
+    if (locale === 'zh-tw') {
+      if (node.type === 'text') node.value = toTraditional(node.value);
+      if (typeof node.alt === 'string') node.alt = toTraditional(node.alt);
+      if (typeof node.title === 'string') node.title = toTraditional(node.title);
+    }
+    if (['link', 'definition'].includes(node.type)) node.url = localContentLink(node.url, locale);
+  });
   const definitions = new Map();
   visit(tree, 'definition', node => definitions.set(node.identifier, node));
   const references = new Set();
@@ -131,32 +143,72 @@ async function markdown(body, image) {
 export async function prepareContent({ source, destination, mediaDestination, empty = false }) {
   await fs.rm(destination, { force: true });
   await fs.rm(mediaDestination, { recursive: true, force: true });
-  const result = { home: { ...defaultHome }, about: { html: '' }, life: [], work: [] };
+  const bundles = Object.fromEntries(contentLocales.map(locale => [locale, {
+    home: { ...defaultHome, intro: locale === 'en' ? 'The website is here. Might as well put a little of myself in it.' : locale === 'zh-tw' ? toTraditional(defaultHome.intro) : defaultHome.intro,
+      introLang: htmlLanguage[locale], nowLang: htmlLanguage[locale], translationFallback: false },
+    about: { html: '', bodyLang: htmlLanguage[locale], translationFallback: false }, life: [], work: [],
+  }]));
+  const result = bundles['zh-cn'];
   if (!empty) {
     if (!source) throw new Error('未指定私有内容目录 CONTENT_DIR；已停止构建。空站预览请用 npm run build:empty。');
     const root = await fs.realpath(source);
     const image = mediaProcessor(root, mediaDestination);
     const home = parseYaml(await safeRead(root, 'home.yml'));
-    if (home?.status === 'published') result.home = validate(homeSchema, home, '首页设置');
+    if (home?.status === 'published') {
+      const entry = validate(homeSchema, home, '首页设置');
+      for (const locale of contentLocales) {
+        const intro = translatedField(entry.intro, entry.english?.intro, locale);
+        const now = translatedField(entry.now, entry.english?.now, locale);
+        const { english, ...publicHome } = entry;
+        bundles[locale].home = { ...publicHome, name: locale === 'en' ? english?.name || entry.name : locale === 'zh-tw' ? toTraditional(entry.name) : entry.name,
+          intro: intro.value, now: now.value, introLang: intro.lang, nowLang: now.lang, translationFallback: intro.fallback || now.fallback };
+      }
+    }
     const about = readMarkdown(await safeRead(root, 'about.md'));
-    if (about.status === 'published') result.about.html = await markdown(about.body, image);
+    if (about.status === 'published') {
+      const entry = validate(aboutSchema, about, '个人介绍');
+      for (const locale of contentLocales) {
+        const body = translatedField(entry.body, entry.english?.body, locale);
+        bundles[locale].about = { html: await markdown(locale === 'en' ? body.value : entry.body, image, locale), bodyLang: body.lang, translationFallback: body.fallback };
+      }
+    }
     const life = await readCollection(root, 'life');
     const work = await readCollection(root, 'work');
     for (const entry of life) {
-      const { id, slug, title, date, tags, body, images, workRef } = entry;
-      const photos = [];
-      for (const photo of images) photos.push({ ...await image(photo.src), alt: photo.alt, caption: photo.caption });
-      result.life.push({ id, slug, title, date, tags, html: await markdown(body, image), images: photos,
-        workRef: work.find(v => v.id === workRef)?.slug ?? '' });
+      const { id, slug, date, tags, images, workRef } = entry;
+      for (const locale of contentLocales) {
+        const title = translatedField(entry.title, entry.english?.title, locale);
+        const body = translatedField(entry.body, entry.english?.body, locale);
+        const photos = [];
+        let fallback = title.fallback || body.fallback;
+        for (const photo of images) {
+          const alt = translatedField(photo.alt, photo.altEn, locale);
+          const caption = translatedField(photo.caption, photo.captionEn, locale);
+          photos.push({ ...await image(photo.src), alt: alt.value, altLang: alt.lang, caption: caption.value, captionLang: caption.lang });
+          fallback ||= alt.fallback || caption.fallback;
+        }
+        bundles[locale].life.push({ id, slug, title: title.value, titleLang: title.lang, bodyLang: body.lang, date,
+          tags: locale === 'zh-tw' ? tags.map(toTraditional) : tags, translationFallback: fallback,
+          html: await markdown(locale === 'en' ? body.value : entry.body, image, locale), images: photos,
+          workRef: work.find(v => v.id === workRef)?.slug ?? '' });
+      }
     }
     for (const entry of work) {
-      const { id, slug, title, date, description, stage, tech, links, body, cover, lifeRef } = entry;
-      result.work.push({ id, slug, title, date, description, stage, tech, links,
-        html: await markdown(body, image), cover: cover ? await image(cover) : null,
-        lifeRef: life.find(v => v.id === lifeRef)?.slug ?? '' });
+      const { id, slug, date, stage, tech, links, cover, lifeRef } = entry;
+      for (const locale of contentLocales) {
+        const title = translatedField(entry.title, entry.english?.title, locale);
+        const body = translatedField(entry.body, entry.english?.body, locale);
+        const description = translatedField(entry.description, entry.english?.description, locale);
+        bundles[locale].work.push({ id, slug, title: title.value, titleLang: title.lang, bodyLang: body.lang, date,
+          description: description.value, descriptionLang: description.lang, stage, tech, links,
+          translationFallback: title.fallback || body.fallback || description.fallback,
+          html: await markdown(locale === 'en' ? body.value : entry.body, image, locale), cover: cover ? await image(cover) : null,
+          lifeRef: life.find(v => v.id === lifeRef)?.slug ?? '' });
+      }
     }
-    result.home.featuredWork = work.find(v => v.id === result.home.featuredWork)?.id ?? '';
+    for (const bundle of Object.values(bundles)) bundle.home.featuredWork = work.find(v => v.id === bundle.home.featuredWork)?.id ?? '';
   }
+  result.locales = { 'zh-tw': bundles['zh-tw'], en: bundles.en };
   await fs.mkdir(path.dirname(destination), { recursive: true });
   await fs.writeFile(destination, JSON.stringify(result));
   return result;

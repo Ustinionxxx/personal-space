@@ -1,0 +1,35 @@
+---
+import HomePage from '@/views/HomePage.astro';
+import LifePage from '@/views/LifePage.astro';
+import WorkPage from '@/views/WorkPage.astro';
+import AboutPage from '@/views/AboutPage.astro';
+import LifeDetail from '@/views/LifeDetail.astro';
+import WorkDetail from '@/views/WorkDetail.astro';
+import RetiredPage from '@/views/RetiredPage.astro';
+import NotFoundPage from '@/views/NotFoundPage.astro';
+import { content, getContent } from '@/lib/content';
+import type { Locale } from '@/lib/i18n';
+
+type Kind = 'home' | 'life' | 'work' | 'about' | 'lifeDetail' | 'workDetail' | 'secret' | '404';
+export function getStaticPaths() {
+  return (['zh-tw', 'en'] as const).flatMap(locale => [
+    ...([['home', undefined], ['life', 'life'], ['work', 'work'], ['about', 'about'], ['secret', 'secret'], ['404', '404']] as const)
+      .map(([kind, path]) => ({ params: { locale, path }, props: { locale, kind } })),
+    ...content.life.map(record => ({ params: { locale, path: `life/${record.slug}` }, props: { locale, kind: 'lifeDetail', slug: record.slug } })),
+    ...content.work.map(project => ({ params: { locale, path: `work/${project.slug}` }, props: { locale, kind: 'workDetail', slug: project.slug } })),
+  ]);
+}
+interface Props { locale: Locale; kind: Kind; slug?: string }
+const { locale, kind, slug } = Astro.props;
+const localized = getContent(locale);
+const record = localized.life.find(entry => entry.slug === slug);
+const project = localized.work.find(entry => entry.slug === slug);
+---
+{kind === 'home' && <HomePage />}
+{kind === 'life' && <LifePage />}
+{kind === 'work' && <WorkPage />}
+{kind === 'about' && <AboutPage />}
+{kind === 'secret' && <RetiredPage />}
+{kind === '404' && <NotFoundPage />}
+{kind === 'lifeDetail' && record && <LifeDetail record={record} />}
+{kind === 'workDetail' && project && <WorkDetail project={project} />}

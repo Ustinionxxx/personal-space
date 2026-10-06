@@ -1,0 +1,9 @@
+---
+import { localeFromPath, messages } from '@/lib/i18n';
+interface Props { show?: boolean }
+const { show = false } = Astro.props;
+---
+{show && <p class="translation-note">{messages[localeFromPath(Astro.url.pathname)].original}</p>}
+<style>
+  .translation-note { font-size: var(--text-caption); color: var(--text-muted); margin: 12px 0; line-height: 1.6; }
+</style>

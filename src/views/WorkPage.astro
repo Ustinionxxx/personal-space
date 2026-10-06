@@ -1,0 +1,21 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Nav from '@/components/Nav.astro';
+import Footer from '@/components/Footer.astro';
+import WorkCard from '@/components/WorkCard.astro';
+import EmptyState from '@/components/EmptyState.astro';
+import { getContent } from '@/lib/content';
+import { localeFromPath, messages } from '@/lib/i18n';
+const locale = localeFromPath(Astro.url.pathname);
+const t = messages[locale];
+const content = getContent(locale);
+
+---
+<BaseLayout title={`${t.work} · ${content.home.name}`}>
+  <Nav />
+  <main id="main-content" class="container container-narrow page-content">
+    <header class="page-heading"><h1 class="text-h1">{t.work}</h1><p>{t.workIntro}</p></header>
+    {content.work.length ? content.work.map(project => <WorkCard project={project} />) : <EmptyState character="coder" message={t.workEmpty} />}
+  </main>
+  <Footer />
+</BaseLayout>
