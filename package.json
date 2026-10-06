@@ -13,8 +13,7 @@
     "content:init": "node scripts/init-content.mjs"
   },
   "dependencies": {
-    "astro": "^5.18.2",
-    "gray-matter": "^4.0.3",
+    "astro": "^7.3.5",
     "rehype-sanitize": "^6.0.0",
     "rehype-stringify": "^10.0.1",
     "remark-gfm": "^4.0.1",
