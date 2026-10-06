@@ -13,7 +13,7 @@ components:
     type: select
     default: draft
     required: true
-    description: 草稿只保存在私有仓库。选择已发布并保存后自动构建；保存成功不代表部署成功，请查看发布任务结果。
+    description: 草稿只保存在私有仓库。选择已发布并保存后自动构建；保存成功不代表部署成功，自动发布结果请在内容仓库的 GitHub Actions 查看。
     options:
       values:
         - { name: draft, label: 私密草稿 }
@@ -159,7 +159,7 @@ content:
 
 actions:
   - name: publish-site
-    label: 重新发布 / 查看运行结果
+    label: 手动重新发布
     workflow: publish.yml
     ref: main
     confirm: false
