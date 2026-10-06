@@ -1,5 +1,6 @@
 ---
 import "@/styles/global.css";
+import { localeFromPath, localizedPath, locales, languageTags, messages } from '@/lib/i18n';
 
 interface Props {
   title: string;
@@ -8,10 +9,11 @@ interface Props {
 }
 
 const { title, description, noindex = false } = Astro.props;
+const locale = localeFromPath(Astro.url.pathname);
 ---
 
 <!doctype html>
-<html lang="zh-CN" data-theme="light">
+<html lang={languageTags[locale]} data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -19,6 +21,8 @@ const { title, description, noindex = false } = Astro.props;
     {description && <meta name="description" content={description} />}
     {noindex && <meta name="robots" content="noindex" />}
     {Astro.site && <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />}
+    {Astro.site && !noindex && locales.map(language => <link rel="alternate" hreflang={languageTags[language]} href={new URL(localizedPath(Astro.url.pathname, language), Astro.site)} />)}
+    {Astro.site && !noindex && <link rel="alternate" hreflang="x-default" href={new URL(localizedPath(Astro.url.pathname, 'zh-cn'), Astro.site)} />}
   </head>
   <body>
     <script is:inline>
@@ -36,7 +40,7 @@ const { title, description, noindex = false } = Astro.props;
         document.documentElement.toggleAttribute('data-reduced-motion', reduceMotion);
       })();
     </script>
-    <a class="skip-link" href="#main-content">跳到内容</a>
+    <a class="skip-link" href="#main-content">{messages[locale].skip}</a>
     <slot />
   </body>
 </html>

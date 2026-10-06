@@ -1,16 +1,4 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import Nav from '@/components/Nav.astro';
-import Footer from '@/components/Footer.astro';
-import LifeCard from '@/components/LifeCard.astro';
-import EmptyState from '@/components/EmptyState.astro';
-import { content } from '@/lib/content';
+import Page from '@/views/LifePage.astro';
 ---
-<BaseLayout title={`生活 · ${content.home.name}`}>
-  <Nav />
-  <main id="main-content" class="container container-narrow page-content">
-    <header class="page-heading"><h1 class="text-h1">生活</h1><p>照片、随手记，和一些还没想完的事。</p></header>
-    {content.life.length ? content.life.map(record => <LifeCard record={record} />) : <EmptyState character="waiting" message="这里还没有公开的记录。" />}
-  </main>
-  <Footer />
-</BaseLayout>
+<Page />

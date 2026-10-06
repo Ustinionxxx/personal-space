@@ -1,15 +1,21 @@
 ---
-import { stageLabels, type Project } from '@/lib/content';
+import type { Project } from '@/lib/content';
+import { localeFromPath, localizedPath, messages } from '@/lib/i18n';
+import TranslationNote from './TranslationNote.astro';
 interface Props { project: Project }
 const { project } = Astro.props;
+const locale = localeFromPath(Astro.url.pathname);
+const t = messages[locale];
+const href = localizedPath(`/work/${project.slug}`, locale);
 ---
 <article class:list={['work-card', { 'work-card--image': !!project.cover }]}>
-  {project.cover && <a href={`/work/${project.slug}`} tabindex="-1" aria-hidden="true"><img src={project.cover.src} width={project.cover.width} height={project.cover.height} alt="" loading="lazy" decoding="async" /></a>}
+  {project.cover && <a href={href} tabindex="-1" aria-hidden="true"><img src={project.cover.src} width={project.cover.width} height={project.cover.height} alt="" loading="lazy" decoding="async" /></a>}
   <div>
-    <p class="project-stage">{stageLabels[project.stage]}</p>
-    <h3 class="text-h3"><a href={`/work/${project.slug}`}>{project.title} <span aria-hidden="true">↗</span></a></h3>
-    {project.description && <p class="project-description">{project.description}</p>}
-    {project.tech.length > 0 && <ul class="tag-list" aria-label="技术">{project.tech.map(tag => <li>{tag}</li>)}</ul>}
+    <p class="project-stage">{t.stages[project.stage]}</p>
+    <h3 class="text-h3" lang={project.titleLang}><a href={href}>{project.title} <span aria-hidden="true">↗</span></a></h3>
+    <TranslationNote show={project.translationFallback} />
+    {project.description && <p class="project-description" lang={project.descriptionLang}>{project.description}</p>}
+    {project.tech.length > 0 && <ul class="tag-list" aria-label={t.tech}>{project.tech.map(tag => <li>{tag}</li>)}</ul>}
   </div>
 </article>
 <style>

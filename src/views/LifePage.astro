@@ -1,0 +1,21 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Nav from '@/components/Nav.astro';
+import Footer from '@/components/Footer.astro';
+import LifeCard from '@/components/LifeCard.astro';
+import EmptyState from '@/components/EmptyState.astro';
+import { getContent } from '@/lib/content';
+import { localeFromPath, messages } from '@/lib/i18n';
+const locale = localeFromPath(Astro.url.pathname);
+const t = messages[locale];
+const content = getContent(locale);
+
+---
+<BaseLayout title={`${t.life} · ${content.home.name}`}>
+  <Nav />
+  <main id="main-content" class="container container-narrow page-content">
+    <header class="page-heading"><h1 class="text-h1">{t.life}</h1><p>{t.lifeIntro}</p></header>
+    {content.life.length ? content.life.map(record => <LifeCard record={record} />) : <EmptyState character="waiting" message={t.lifeEmpty} />}
+  </main>
+  <Footer />
+</BaseLayout>

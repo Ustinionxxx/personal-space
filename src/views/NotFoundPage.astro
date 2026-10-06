@@ -1,0 +1,50 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Nav from "@/components/Nav.astro";
+import Character from "@/components/Character.astro";
+import { localeFromPath, localizedPath, messages } from '@/lib/i18n';
+const locale = localeFromPath(Astro.url.pathname);
+const t = messages[locale];
+
+---
+
+<BaseLayout title={`404 · ${t.notFound}`} noindex>
+  <Nav />
+  <main id="main-content" class="not-found">
+    <div class="not-found-content">
+      <Character id="lost" size={140} />
+      <h1 class="text-h2 text-secondary" style="margin-top: var(--space-lg);">
+        {t.nothing}
+      </h1>
+      <a href={localizedPath('/', locale)} class="not-found-btn">{t.backHome}</a>
+    </div>
+  </main>
+
+  <style>
+    .not-found {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 200px);
+    }
+
+    .not-found-content {
+      text-align: center;
+    }
+
+    .not-found-btn {
+      display: inline-block;
+      margin-top: var(--space-xl);
+      padding: var(--space-sm) var(--space-xl);
+      background: var(--text-primary);
+      color: var(--bg-primary);
+      border-radius: var(--radius-pill);
+      font-size: var(--text-body);
+      transition: opacity 200ms ease;
+    }
+
+    .not-found-btn:hover {
+      opacity: 0.8;
+    }
+  </style>
+</BaseLayout>

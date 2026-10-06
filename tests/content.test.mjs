@@ -28,7 +28,7 @@ test('untitled text publishes; dates sort; draft and unknown metadata never leav
   const f = await fixture(t);
   await f.write('life', 'older', { status: 'published', date: '2026-09-30', internalNote: 'PRIVATE_METADATA_SENTINEL' }, '两句话。\n\n还没想完也可以留下。');
   await f.write('life', 'newer', { status: 'published', date: '2026-10-05' }, '新的记录');
-  await f.write('life', 'draft', { status: 'draft', images: [{ src: '/media/missing.jpg' }] }, 'PRIVATE_BODY_SENTINEL');
+  await f.write('life', 'draft', { status: 'draft', english: { body: 'PRIVATE_ENGLISH_SENTINEL' }, images: [{ src: '/media/missing.jpg' }] }, 'PRIVATE_BODY_SENTINEL');
   await f.write('life', 'missing-status', {}, 'PRIVATE_MISSING_STATUS');
   await f.write('life', 'wrong-status', { status: 'publish' }, 'PRIVATE_WRONG_STATUS');
   const output = await f.build();
@@ -93,6 +93,37 @@ test('About updates from its source; renamed titles preserve stable and migrated
   assert.doesNotMatch(JSON.stringify(first), /private-work|PRIVATE_WORK/);
 });
 
+test('language content preserves code, links and IDs; English fallback is explicit; translation images use the same safe pipeline', async t => {
+  const f = await fixture(t);
+  await f.photo('shared.jpg');
+  await f.photo('english-only.jpg', 30, 40, '#334455');
+  await f.write('life', 'translated', { status: 'published', date: '2026-10-01', title: '简体记录',
+    english: { title: 'A note', body: 'An English note.\n\n[Related](/work/a-project#details)\n\n![Image](/media/english-only.jpg)', privateNote: 'PRIVATE_TRANSLATION_METADATA' },
+    images: [{ src: '/media/shared.jpg', caption: '画面', captionEn: 'A scene' }],
+  }, '这里记录生活。`简体代码`\n\n[关于](/about)\n\n```text\n简体代码\n```');
+  await f.write('life', 'original', { status: 'published', date: '2026-10-02' }, '尚未翻译');
+  await fs.writeFile(path.join(f.source, 'about.md'), '---\nstatus: published\nenglish:\n  body: About in English\n---\n个人介绍');
+  const output = await f.build();
+  const traditional = output.locales['zh-tw'].life.find(entry => entry.id === 'translated');
+  const english = output.locales.en.life.find(entry => entry.id === 'translated');
+  assert.equal(traditional.title, '簡體記錄');
+  assert.match(traditional.html, /這裡記錄生活/);
+  assert.match(traditional.html, /<code>简体代码<\/code>/);
+  assert.match(traditional.html, /href="\/zh-tw\/about"/);
+  assert.equal(english.slug, output.life.find(entry => entry.id === 'translated').slug);
+  assert.equal(english.title, 'A note');
+  assert.match(english.html, /href="\/en\/work\/a-project#details"/);
+  assert.match(english.html, /src="\/media\/[a-f0-9]{24}\.webp"/);
+  assert.equal(english.images[0].caption, 'A scene');
+  assert.equal(english.images[0].src, traditional.images[0].src);
+  assert.equal(english.translationFallback, false);
+  assert.equal(output.locales.en.life.find(entry => entry.id === 'original').translationFallback, true);
+  assert.equal(output.locales.en.life.find(entry => entry.id === 'original').bodyLang, 'zh-CN');
+  assert.match(output.locales.en.about.html, /About in English/);
+  assert.doesNotMatch(JSON.stringify(output), /PRIVATE_/);
+  assert.equal((await fs.readdir(f.options.mediaDestination)).length, 2);
+});
+
 test('invalid published content fails clearly, drafts do not require complete fields', async t => {
   const f = await fixture(t);
   await f.write('life', 'bad', { status: 'published', date: '2026-02-30' }, '记录');
@@ -125,16 +156,44 @@ test('production build: draft text/files absent in every artifact; latest three 
   await f.photo('public.jpg');
   await f.photo('PRIVATE_ORPHAN.jpg', 50, 50, '#ff0000');
   await fs.writeFile(path.join(f.source, '.env'), 'PRIVATE_CREDENTIAL_SENTINEL');
-  await f.write('life', 'private-record', { status: 'draft', images: [{ src: '/media/PRIVATE_ORPHAN.jpg' }] }, 'PRIVATE_DRAFT_SENTINEL');
+  await f.write('life', 'private-record', { status: 'draft', english: { body: 'PRIVATE_ENGLISH_DRAFT' }, images: [{ src: '/media/PRIVATE_ORPHAN.jpg' }] }, 'PRIVATE_DRAFT_SENTINEL');
   for (let n = 1; n <= 4; n++) await f.write('life', `entry-${n}`, {
-    status: 'published', date: `2026-10-0${n}`, images: n === 4 ? [{ src: '/media/public.jpg' }] : [],
+    status: 'published', date: `2026-10-0${n}`, english: n === 4 ? { body: 'An English entry. [About](/about)' } : undefined, images: n === 4 ? [{ src: '/media/public.jpg' }] : [],
   }, `VISIBLE_ENTRY_${n}`);
-  const build = () => spawnSync(process.execPath, ['scripts/build.mjs'], { encoding: 'utf8', env: { ...process.env, CONTENT_DIR: f.source } });
+  await f.write('work', 'work-shared', { status: 'published', date: '2026-10-01', title: '一个项目', stage: 'paused', lifeRef: 'entry-4',
+    english: { title: 'A project', body: 'A project in English.' } }, '这是项目。');
+  await fs.writeFile(path.join(f.source, 'about.md'), '---\nstatus: published\nenglish:\n  body: About in English\n---\n个人介绍');
+  const build = () => spawnSync(process.execPath, ['scripts/build.mjs'], { encoding: 'utf8', env: { ...process.env, CONTENT_DIR: f.source, SITE_URL: 'https://example.test' } });
   const first = build();
   assert.equal(first.status, 0, first.stdout + first.stderr);
   const home = await fs.readFile('dist/index.html', 'utf8');
   assert.doesNotMatch(home, /VISIBLE_ENTRY_1/);
   for (const n of [2, 3, 4]) assert.match(home, new RegExp(`VISIBLE_ENTRY_${n}`));
+  const englishHome = await fs.readFile('dist/en/index.html', 'utf8');
+  assert.match(englishHome, /lang="en"/);
+  assert.match(englishHome, /Recent notes/);
+  assert.match(englishHome, /An English entry/);
+  assert.match(englishHome, /href="\/en\/life\/entry-4"/);
+  assert.match(englishHome, /original language/);
+  const englishDetail = await fs.readFile('dist/en/life/entry-4/index.html', 'utf8');
+  assert.match(englishDetail, /href="\/en\/about"/);
+  for (const prefix of ['', 'en/', 'zh-tw/']) {
+    const detail = await fs.readFile(`dist/${prefix}life/entry-4/index.html`, 'utf8');
+    assert.match(detail, /href="\/life\/entry-4\/?"/);
+    assert.match(detail, /href="\/en\/life\/entry-4\/?"/);
+    assert.match(detail, /href="\/zh-tw\/life\/entry-4\/?"/);
+    assert.match(detail, /hreflang="en"/);
+    assert.match(detail, /hreflang="zh-Hant"/);
+    assert.match(detail, /rel="canonical"/);
+  }
+  const englishProject = await fs.readFile('dist/en/work/work-shared/index.html', 'utf8');
+  assert.match(englishProject, /A project in English/);
+  assert.match(englishProject, /On hold/);
+  assert.match(englishProject, /href="\/en\/life\/entry-4"/);
+  assert.match(await fs.readFile('dist/en/about/index.html', 'utf8'), /About in English/);
+  const traditionalHome = await fs.readFile('dist/zh-tw/index.html', 'utf8');
+  assert.match(traditionalHome, /lang="zh-Hant"/);
+  assert.match(traditionalHome, /首頁/);
   for (const file of await fs.readdir('dist', { recursive: true, withFileTypes: true })) {
     if (!file.isFile()) continue;
     assert.doesNotMatch(file.name, /PRIVATE_|\.md$|\.yml$|\.env|\.map$/);
@@ -144,6 +203,8 @@ test('production build: draft text/files absent in every artifact; latest three 
   const withdrawn = build();
   assert.equal(withdrawn.status, 0, withdrawn.stdout + withdrawn.stderr);
   await assert.rejects(fs.access('dist/life/entry-4/index.html'));
+  await assert.rejects(fs.access('dist/en/life/entry-4/index.html'));
+  await assert.rejects(fs.access('dist/zh-tw/life/entry-4/index.html'));
   await assert.rejects(fs.access('dist/media'));
   await f.write('life', 'invalid', { status: 'published', date: '2026-10-01', images: [{ src: '/media/missing.jpg' }] });
   const failed = build();
