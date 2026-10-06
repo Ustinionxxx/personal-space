@@ -2,10 +2,11 @@
 import { navItems, siteConfig } from "@/config";
 import SunMoonIcon from "@/components/icons/SunMoonIcon.astro";
 
-const currentPath = Astro.url.pathname;
+const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (href: string) => href === '/' ? currentPath === '/' : currentPath === href || currentPath.startsWith(href + '/');
 ---
 
-<nav class="nav">
+<nav class="nav" aria-label="主导航">
   <div class="nav-inner container">
     <a href="/" class="nav-logo">{siteConfig.name}</a>
 
@@ -15,7 +16,8 @@ const currentPath = Astro.url.pathname;
           <li>
             <a
               href={item.href}
-              class={`nav-link ${currentPath === item.href ? "nav-link--active" : ""}`}
+              class={`nav-link ${isActive(item.href) ? "nav-link--active" : ""}`}
+              aria-current={isActive(item.href) ? 'page' : undefined}
             >
               {item.label}
             </a>
@@ -27,7 +29,7 @@ const currentPath = Astro.url.pathname;
     <button
       class="nav-theme-btn"
       id="theme-toggle"
-      aria-label="Toggle dark mode"
+      aria-label="切换亮暗主题"
       type="button"
     >
       <span class="nav-theme-icon nav-theme-icon--light">
@@ -47,8 +49,10 @@ const currentPath = Astro.url.pathname;
     const current = html.getAttribute("data-theme");
     const next = current === "dark" ? "light" : "dark";
     html.setAttribute("data-theme", next);
-    localStorage.setItem("theme", next);
+    try { localStorage.setItem("theme", next); } catch {}
+    btn.setAttribute('aria-pressed', String(next === 'dark'));
   });
+  btn.setAttribute('aria-pressed', String(document.documentElement.getAttribute('data-theme') === 'dark'));
 </script>
 
 <style>
@@ -57,12 +61,14 @@ const currentPath = Astro.url.pathname;
   }
 
   .nav-inner {
+    gap: 12px;
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
 
   .nav-logo {
+    white-space: nowrap;
     font-size: var(--text-h3);
     font-weight: 400;
     color: var(--text-primary);
@@ -107,6 +113,7 @@ const currentPath = Astro.url.pathname;
   }
 
   .nav-theme-btn {
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -123,13 +130,14 @@ const currentPath = Astro.url.pathname;
   }
 
   /* Show/hide correct icon based on theme */
-  [data-theme="light"] .nav-theme-icon--dark,
-  [data-theme="dark"] .nav-theme-icon--light {
+  :global([data-theme="light"]) .nav-theme-icon--dark,
+  :global([data-theme="dark"]) .nav-theme-icon--light {
     display: none;
   }
 
   /* Mobile nav */
   @media (max-width: 768px) {
+    .nav-logo { font-size: 16px; }
     .nav-links {
       gap: var(--space-md);
     }
@@ -137,5 +145,9 @@ const currentPath = Astro.url.pathname;
     .nav-link {
       font-size: var(--text-small);
     }
+  }
+  @media (max-width: 360px) {
+    .nav-inner { flex-wrap: wrap; }
+    .nav-links { order: 3; width: 100%; justify-content: space-between; }
   }
 </style>

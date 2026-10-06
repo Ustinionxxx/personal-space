@@ -4,9 +4,10 @@ import "@/styles/global.css";
 interface Props {
   title: string;
   description?: string;
+  noindex?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, noindex = false } = Astro.props;
 ---
 
 <!doctype html>
@@ -16,19 +17,26 @@ const { title, description } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
+    {noindex && <meta name="robots" content="noindex" />}
+    {Astro.site && <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />}
   </head>
   <body>
     <script is:inline>
       // Apply saved theme before paint to prevent flash
       (function () {
-        const saved = localStorage.getItem("theme");
+        let saved;
+        try { saved = localStorage.getItem("theme"); } catch {}
         const prefersDark = window.matchMedia(
           "(prefers-color-scheme: dark)"
         ).matches;
-        const theme = saved || (prefersDark ? "dark" : "light");
+        const theme = ['light', 'dark'].includes(saved) ? saved : (prefersDark ? "dark" : "light");
         document.documentElement.setAttribute("data-theme", theme);
+        let reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        try { reduceMotion ||= localStorage.getItem('reduce-motion') === 'true'; } catch {}
+        document.documentElement.toggleAttribute('data-reduced-motion', reduceMotion);
       })();
     </script>
+    <a class="skip-link" href="#main-content">跳到内容</a>
     <slot />
   </body>
 </html>

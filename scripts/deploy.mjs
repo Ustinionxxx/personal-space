@@ -1,0 +1,13 @@
+import { spawnSync } from 'node:child_process';
+import fs from 'node:fs/promises';
+import { auditDist } from './audit-dist.mjs';
+const project = process.env.PAGES_PROJECT;
+if (!project || !/^[a-z0-9][a-z0-9-]*$/.test(project)) throw new Error('请设置内容仓库变量 PAGES_PROJECT');
+if (!process.env.CLOUDFLARE_API_TOKEN || !process.env.CLOUDFLARE_ACCOUNT_ID) throw new Error('请设置 Cloudflare 账户 ID 和 API Token secrets');
+await auditDist();
+const result = spawnSync('node_modules/.bin/wrangler', ['pages', 'deploy', 'dist', '--project-name', project, '--branch', 'main', '--commit-dirty=true'], { stdio: 'inherit', env: process.env });
+if (result.status !== 0) process.exit(result.status || 1);
+const url = `https://${project}.pages.dev`;
+if (process.env.GITHUB_OUTPUT) await fs.appendFile(process.env.GITHUB_OUTPUT, `url=${url}\n`);
+if (process.env.GITHUB_STEP_SUMMARY) await fs.appendFile(process.env.GITHUB_STEP_SUMMARY, `网站部署成功：[打开网站](${url})。\n\n后台保存与网站部署是两个独立步骤；本次部署只包含已发布内容。\n`);
+console.log(`网站部署成功：${url}`);

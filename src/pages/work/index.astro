@@ -1,50 +1,16 @@
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro";
-import Nav from "@/components/Nav.astro";
-import Footer from "@/components/Footer.astro";
-import Character from "@/components/Character.astro";
-import WorkCard from "@/components/WorkCard.astro";
-import { getCollection } from "astro:content";
-
-const projects = await getCollection("work");
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Nav from '@/components/Nav.astro';
+import Footer from '@/components/Footer.astro';
+import WorkCard from '@/components/WorkCard.astro';
+import EmptyState from '@/components/EmptyState.astro';
+import { content } from '@/lib/content';
 ---
-
-<BaseLayout title="Work">
+<BaseLayout title={`折腾 · ${content.home.name}`}>
   <Nav />
-  <main class="container container-narrow" style="padding-top: var(--space-4xl); padding-bottom: var(--space-4xl);">
-    <div class="work-header">
-      <Character id="coder" size={40} />
-      <h1 class="text-h1">Work</h1>
-    </div>
-    <hr class="work-divider" />
-
-    <div class="work-list">
-      {projects.length === 0 ? (
-        <p class="text-body text-muted">暂无项目</p>
-      ) : (
-        projects.map((project) => <WorkCard project={project} />)
-      )}
-    </div>
+  <main id="main-content" class="container container-narrow page-content">
+    <header class="page-heading"><h1 class="text-h1">折腾</h1><p>做过的、还在做的，也有暂时放下的。</p></header>
+    {content.work.length ? content.work.map(project => <WorkCard project={project} />) : <EmptyState character="coder" message="项目还在整理，先留个位置。" />}
   </main>
   <Footer />
-
-  <style>
-    .work-header {
-      display: flex;
-      align-items: center;
-      gap: var(--space-md);
-      margin-bottom: var(--space-lg);
-    }
-
-    .work-divider {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin-bottom: var(--space-xl);
-    }
-
-    .work-list {
-      display: flex;
-      flex-direction: column;
-    }
-  </style>
 </BaseLayout>
