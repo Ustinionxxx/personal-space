@@ -2,6 +2,8 @@
 
 邢思佳的个人网站。保留小人、留白、青绿色和亮暗主题，让随手记、生活照片与项目都能自然放进来。
 
+这是原 `personal-space` 项目的新版，`main` 主分支是正式版本。原页面已由新版替换。
+
 网站地址：[personal-space-ustinionxxx.pages.dev](https://personal-space-ustinionxxx.pages.dev/)。[网页后台](https://app.pagescms.org/ustinionxxx/personal-space-content/main)与自动发布已接通；首条生活记录已通过后台发布，见 [接入状态](docs/setup-status.md)。
 
 - 首页：简短介绍、最近三条记录、选中的项目、关于与联系。
@@ -12,7 +14,7 @@
 
 ## 内容与代码
 
-本仓库只放公开代码，使用 Astro、TypeScript、Markdown 和静态输出。Pages CMS 的内容、原图与草稿放在独立的 **私有仓库** `personal-space-content`。
+本仓库只放公开代码，使用 Astro、TypeScript、Markdown 和静态输出。Pages CMS 的内容、原图与草稿放在独立的 **私有仓库** `personal-space-content`；这个仓库仅用于保存本站内容，不是第二个网站项目。
 
 只提取已发布内容、只生成其引用图片的网页版本，去除图片 EXIF。没有公开草稿预览，也没有前端密码保护。旧 `/secret` 入口已停用。
 

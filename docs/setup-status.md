@@ -1,18 +1,19 @@
 # 当前接入状态
 
-更新于 2026-10-06。
+更新于 2026-10-07。
 
 ## 日常入口
 
 - [网站](https://personal-space-ustinionxxx.pages.dev/)
 - [Pages CMS 网页后台](https://app.pagescms.org/ustinionxxx/personal-space-content/main)
 - [自动发布结果](https://github.com/Ustinionxxx/personal-space-content/actions/workflows/publish.yml)
-- [代码更新 PR #1](https://github.com/Ustinionxxx/personal-space/pull/1)
+- [新版正式代码](https://github.com/Ustinionxxx/personal-space/tree/main)
+- [已合并的代码更新 PR #1](https://github.com/Ustinionxxx/personal-space/pull/1)
 
 ## 已完成
 
 - 前台支持随手记、完整比例图集、项目进展、统一 About 内容源、亮暗主题与主动播放的终端彩蛋。
-- 公开代码位于原 `personal-space` 仓库的 `feat/personal-content` 分支；PR 已建立，GitHub Actions 代码检查通过。
+- 新版已通过 PR #1 合并到原 `personal-space` 仓库的 `main` 主分支，替换原页面。本地开发目录也已切换到 `main`；仍是同一个网站项目。
 - `Ustinionxxx/personal-space-content` 已建立并确认私有。旧示例与 BiliNote 保留为待整理草稿，首页使用本人已确认的介绍。
 - Pages CMS 已登录、安装并只选择该私有内容仓库。本人已确认安装页实际要求的文件、Actions、工作流及仓库管理读写权限。
 - 自动生成 ID、默认今天的日期、无标题纯文字草稿、横竖图片上传、说明和再次保存均已在实际后台验收。
@@ -24,7 +25,7 @@
 
 ## 发布配置
 
-内容仓库的工作流固定引用公开代码提交 `98b6980f9533a63070f61f7b6901ad0a4be6329b`。只有已发布文字及其引用照片进入构建，原图、草稿与凭据不进入公开产物。
+内容仓库的工作流固定引用 `personal-space` 主分支上经过检查的完整提交 SHA，具体版本记录在私有仓库的 `.github/workflows/publish.yml`。只有已发布文字及其引用照片进入构建，原图、草稿与凭据不进入公开产物。`personal-space-content` 只保存本站内容，不是另一套网站。
 
 | 类型 | 名称 | 值或说明 |
 | --- | --- | --- |
