@@ -2,6 +2,8 @@
 
 邢思佳的个人网站。保留小人、留白、青绿色和亮暗主题，让随手记、生活照片与项目都能自然放进来。
 
+网站地址：[personal-space-ustinionxxx.pages.dev](https://personal-space-ustinionxxx.pages.dev/)。当前已完成首次静态发布；Pages CMS 和自动发布仍待接入，见 [接入状态](docs/setup-status.md)。
+
 - 首页：简短介绍、最近三条记录、选中的项目、关于与联系。
 - `/life`：按日期倒序的图文记录，标题/照片/标签可选；图集保留比例和说明。
 - `/work`：进行中、已完成或暂时搁置的项目。
