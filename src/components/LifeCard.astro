@@ -1,96 +1,30 @@
 ---
-import type { CollectionEntry } from "astro:content";
-
-interface Props {
-  record: CollectionEntry<"life">;
-  variant: "featured" | "normal";
-}
-
-const { record, variant } = Astro.props;
-const { title, tags } = record.data;
-const isFeatured = variant === "featured";
+import { formatDate, type LifeRecord } from '@/lib/content';
+interface Props { record: LifeRecord }
+const { record } = Astro.props;
+const href = `/life/${record.slug}`;
 ---
-
-<a href={`/life/${record.slug}`} class={`life-card ${isFeatured ? "life-card--featured" : ""}`}>
-  <div class="life-card-image">
-    <div class="life-card-placeholder">
-      <span class="text-muted text-small">照片占位</span>
-    </div>
-    <div class="life-card-overlay">
-      <p class="life-card-title text-body">{title}</p>
-      <div class="life-card-tags">
-        {tags.map((t) => (
-          <span class="life-card-tag text-caption">{t}</span>
-        ))}
-      </div>
-    </div>
-  </div>
-</a>
-
+<article class="life-card" aria-label={record.title || `${formatDate(record.date)}的记录`}>
+  <a href={href} class="record-date"><time datetime={record.date}>{formatDate(record.date)}</time><span aria-hidden="true"> ↗</span></a>
+  {record.title && <h3 class="text-h3"><a href={href}>{record.title}</a></h3>}
+  {record.html && <div class="prose record-body" set:html={record.html} />}
+  {record.images.length > 0 && <div class:list={['record-photos', { 'record-photos--multiple': record.images.length > 1 }]}>
+    {record.images.slice(0, 3).map((photo, index) => <a href={href} aria-label={`查看${record.title || formatDate(record.date) + '的照片'}，第 ${index + 1} 张`}>
+      <img src={photo.src} width={photo.width} height={photo.height} alt={photo.alt || photo.caption || `照片 ${index + 1}`} loading="lazy" decoding="async" />
+    </a>)}
+  </div>}
+  {record.images.length > 3 && <a class="text-link text-small" href={href}>查看全部 {record.images.length} 张照片</a>}
+  {record.tags.length > 0 && <ul class="tag-list" aria-label="标签">{record.tags.map(tag => <li>#{tag}</li>)}</ul>}
+</article>
 <style>
-  .life-card {
-    display: block;
-    cursor: pointer;
-  }
-
-  .life-card--featured {
-    grid-column: span 2;
-    grid-row: span 2;
-  }
-
-  .life-card-image {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    min-height: 200px;
-    border-radius: var(--radius-image);
-    overflow: hidden;
-  }
-
-  .life-card--featured .life-card-image {
-    min-height: 420px;
-  }
-
-  .life-card-placeholder {
-    width: 100%;
-    height: 100%;
-    min-height: inherit;
-    background: var(--bg-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .life-card-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: var(--space-lg) var(--space-md) var(--space-md);
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
-    opacity: 0;
-    transition: opacity 300ms ease-out;
-  }
-
-  .life-card:hover .life-card-overlay {
-    opacity: 1;
-  }
-
-  .life-card-title {
-    color: #fff;
-    margin-bottom: var(--space-xs);
-  }
-
-  .life-card-tags {
-    display: flex;
-    gap: var(--space-xs);
-    flex-wrap: wrap;
-  }
-
-  .life-card-tag {
-    color: rgba(255, 255, 255, 0.7);
-    padding: 1px var(--space-sm);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: var(--radius-pill);
-  }
+  .life-card { padding: 28px 0 32px; border-top: 1px solid var(--border); min-width: 0; }
+  .record-date { display: inline-block; color: var(--text-secondary); font-size: var(--text-caption); margin-bottom: 12px; padding: 4px 0; }
+  .record-date:hover, h3 a:hover { color: var(--accent); }
+  h3 { margin-bottom: 12px; overflow-wrap: anywhere; }
+  .record-photos { display: grid; gap: 12px; margin-top: 20px; align-items: start; }
+  .record-photos a { min-width: 0; }
+  .record-photos img { width: 100%; height: auto; border-radius: 6px; }
+  .record-photos--multiple { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .record-photos--multiple:has(a:nth-child(2):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @media (max-width: 600px) { .record-photos--multiple, .record-photos--multiple:has(a:nth-child(2):last-child) { grid-template-columns: 1fr; } }
 </style>

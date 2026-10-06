@@ -1,0 +1,61 @@
+name: 发布个人网站
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      payload:
+        description: Pages CMS action context
+        required: false
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: production
+  cancel-in-progress: false
+jobs:
+  publish:
+    # Never run this workflow in a public content repository or on a preview branch.
+    if: github.event.repository.private == true && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - name: 检出私有内容
+        uses: actions/checkout@v4
+        with:
+          path: content
+          persist-credentials: false
+      - name: 检出固定版本的公开代码
+        uses: actions/checkout@v4
+        with:
+          repository: Ustinionxxx/personal-space
+          ref: __SITE_CODE_SHA__
+          path: site
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - name: 安装构建依赖
+        working-directory: site
+        run: npm ci
+      - name: 只构建已发布内容并检查产物
+        working-directory: site
+        env:
+          CONTENT_DIR: ${{ github.workspace }}/content
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: npm run build
+      - name: 上传到 Cloudflare Pages
+        id: deploy
+        working-directory: site
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PAGES_PROJECT: ${{ vars.PAGES_PROJECT }}
+        run: node scripts/deploy.mjs
+      - name: 失败说明
+        if: failure()
+        run: echo '构建或上传失败。请查看上方失败步骤；已有的线上版本不会被这次失败的构建替换。' >> "$GITHUB_STEP_SUMMARY"

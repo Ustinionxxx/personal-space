@@ -1,164 +1,28 @@
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro";
-import Nav from "@/components/Nav.astro";
-import Footer from "@/components/Footer.astro";
-import TagPill from "@/components/TagPill.astro";
-import { getCollection } from "astro:content";
-
-export async function getStaticPaths() {
-  const projects = await getCollection("work");
-  return projects.map((p) => ({ params: { slug: p.slug } }));
-}
-
-const { slug } = Astro.params;
-const projects = await getCollection("work");
-const project = projects.find((p) => p.slug === slug);
-
-if (!project) {
-  return Astro.redirect("/404");
-}
-
-const { title, description, tech, links, lifeRef } = project.data;
-const { Content } = await project.render();
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Nav from '@/components/Nav.astro';
+import Footer from '@/components/Footer.astro';
+import { content, stageLabels, type Project } from '@/lib/content';
+export function getStaticPaths() { return content.work.map(project => ({ params: { slug: project.slug }, props: { project } })); }
+interface Props { project: Project }
+const { project } = Astro.props;
 ---
-
-<BaseLayout title={title} description={description}>
+<BaseLayout title={`${project.title} · ${content.home.name}`} description={project.description}>
   <Nav />
-  <main class="container container-narrow" style="padding-top: var(--space-4xl); padding-bottom: var(--space-4xl);">
+  <main id="main-content" class="container container-narrow page-content">
+    <a class="back-link" href="/work">← 折腾</a>
     <article>
-      <header class="detail-header">
-        <h1 class="text-h1">{title}</h1>
-        <p class="text-body text-secondary" style="margin-top: var(--space-sm);">
-          {description}
-        </p>
-      </header>
-
-      <hr class="detail-divider" />
-
-      <div class="detail-content">
-        <Content />
-      </div>
-
-      <hr class="detail-divider" />
-
-      <div class="detail-meta">
-        <div class="detail-tags">
-          <span class="text-small text-muted">技术栈：</span>
-          <div style="display: flex; gap: var(--space-xs); flex-wrap: wrap; margin-top: var(--space-xs);">
-            {tech.map((t) => <TagPill label={t} />)}
-          </div>
-        </div>
-
-        {links && (
-          <div class="detail-links" style="margin-top: var(--space-lg);">
-            {links.github && (
-              <a href={links.github} target="_blank" rel="noopener noreferrer" class="detail-link">
-                🔗 GitHub
-              </a>
-            )}
-            {links.demo && (
-              <a href={links.demo} target="_blank" rel="noopener noreferrer" class="detail-link">
-                🔗 在线演示
-              </a>
-            )}
-          </div>
-        )}
-
-        {lifeRef && (
-          <p class="text-small" style="margin-top: var(--space-lg);">
-            💡 灵感来自 <a href={`/life/${lifeRef}`} class="detail-crosslink">Life 区记录</a>
-          </p>
-        )}
+      <header class="page-heading"><p class="text-accent text-small">{stageLabels[project.stage]}</p><h1 class="text-h1">{project.title}</h1>{project.description && <p>{project.description}</p>}</header>
+      {project.cover && <div class="photo-story"><img src={project.cover.src} width={project.cover.width} height={project.cover.height} alt="项目画面" /></div>}
+      <div class="prose" set:html={project.html} />
+      {project.tech.length > 0 && <ul class="tag-list" aria-label="技术">{project.tech.map(tag => <li>{tag}</li>)}</ul>}
+      <div class="link-row related">
+        {project.links?.github && <a class="text-link" href={project.links.github}>源码 ↗</a>}
+        {project.links?.demo && <a class="text-link" href={project.links.demo}>在线演示 ↗</a>}
+        {project.links?.process && <a class="text-link" href={project.links.process}>过程记录 ↗</a>}
+        {project.lifeRef && <a class="text-link" href={`/life/${project.lifeRef}`}>相关生活记录 ↗</a>}
       </div>
     </article>
   </main>
   <Footer />
-
-  <style>
-    .detail-header {
-      margin-bottom: var(--space-lg);
-    }
-
-    .detail-divider {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: var(--space-xl) 0;
-    }
-
-    .detail-content :global(h2) {
-      font-size: var(--text-h2);
-      font-weight: 400;
-      color: var(--text-primary);
-      margin: var(--space-lg) 0 var(--space-md);
-    }
-
-    .detail-content :global(h3) {
-      font-size: var(--text-h3);
-      font-weight: 400;
-      color: var(--text-primary);
-      margin: var(--space-md) 0 var(--space-sm);
-    }
-
-    .detail-content :global(p) {
-      font-size: var(--text-body);
-      color: var(--text-secondary);
-      line-height: 1.8;
-      margin-bottom: var(--space-md);
-    }
-
-    .detail-content :global(ul), .detail-content :global(ol) {
-      list-style: disc;
-      padding-left: var(--space-lg);
-      color: var(--text-secondary);
-      margin-bottom: var(--space-md);
-    }
-
-    .detail-content :global(li) {
-      margin-bottom: var(--space-xs);
-    }
-
-    .detail-content :global(code) {
-      font-family: var(--font-mono);
-      font-size: var(--text-small);
-      background: var(--bg-secondary);
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-
-    .detail-content :global(pre) {
-      background: var(--bg-secondary);
-      padding: var(--space-md);
-      border-radius: var(--radius-image);
-      overflow-x: auto;
-      margin-bottom: var(--space-md);
-    }
-
-    .detail-content :global(pre code) {
-      background: none;
-      padding: 0;
-    }
-
-    .detail-link {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-xs);
-      color: var(--accent);
-      font-size: var(--text-body);
-      margin-right: var(--space-lg);
-      transition: text-decoration 200ms ease;
-    }
-
-    .detail-link:hover {
-      text-decoration: underline;
-    }
-
-    .detail-crosslink {
-      color: var(--accent);
-      transition: text-decoration 200ms ease;
-    }
-
-    .detail-crosslink:hover {
-      text-decoration: underline;
-    }
-  </style>
 </BaseLayout>

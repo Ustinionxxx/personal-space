@@ -1,97 +1,53 @@
 # 个人数字空间
 
-## 关于
+邢思佳的个人网站。保留小人、留白、青绿色和亮暗主题，让随手记、生活照片与项目都能自然放进来。
 
-一个极简风格的个人数字空间（Personal Digital Space）。本项目不是传统的简历网站或作品集，而是一个以"克制表达 + 分层内容"为核心的展示平台。访问者进入后会先看到 CRT 终端风格的开机动画，随后渐隐过渡到主页，通过浮动呆萌小人、一句话标签、GitHub/Email 社交链接，在 3 秒内建立"有点惊喜、这个人有点意思"的第一印象。
+网站地址：[personal-space-ustinionxxx.pages.dev](https://personal-space-ustinionxxx.pages.dev/)。[网页后台](https://app.pagescms.org/ustinionxxx/personal-space-content/main)与自动发布已接通；首条生活记录已通过后台发布，见 [接入状态](docs/setup-status.md)。
 
-站点包含四大核心模块——**Work**（项目展示）、**Life**（杂志排版生活图墙）、**About**（关于页 + 🗝️ 秘密入口）、**404**（迷路小人兜底）。所有内容以 Markdown 驱动，支持模块间交叉引用（Work ↔ Life 互链），亮/暗双模式通过 CSS Variables 无闪烁切换。构建产物为纯静态 HTML/CSS/JS，可部署到任意 Web 服务器。
+- 首页：简短介绍、最近三条记录、选中的项目、关于与联系。
+- `/life`：按日期倒序的图文记录，标题/照片/标签可选；图集保留比例和说明。
+- `/work`：进行中、已完成或暂时搁置的项目。
+- `/about`：从同一份后台可编辑 Markdown 生成。
+- 终端开场是主动播放的彩蛋，支持关闭、Esc、键盘和减少动画。
 
-## 技术栈
+## 内容与代码
 
-**Astro 5** + TypeScript + CSS Variables + Markdown Content Collections
+本仓库只放公开代码，使用 Astro、TypeScript、Markdown 和静态输出。Pages CMS 的内容、原图与草稿放在独立的 **私有仓库** `personal-space-content`。
 
-- 零 JS 运行时，纯静态输出（Islands 架构）
-- 亮/暗双模式（CSS 自定义属性驱动，localStorage 持久化，首次访问跟随系统）
-- CRT 终端开机动画（逐行浮现、扫描线、暗角、ASCII 艺术字，按任意键跳过）
-- 4 个手绘 SVG 呆萌小人（首页浮动、Work 敲代码、Life 等待、404 迷路）
-- Life 杂志排版（CSS Grid dense 自适应，hover 渐变遮罩揭示标题/标签）
-- 秘密角落（密码弹窗前验，轻量隐私保护）
-- 设计令牌系统（4px 基底间距、6 级字号、单强调色 `#2E6F6A`）
+只提取已发布内容、只生成其引用图片的网页版本，去除图片 EXIF。没有公开草稿预览，也没有前端密码保护。旧 `/secret` 入口已停用。
 
-## 本地开发
+## 本地运行
 
-```bash
-npm install
-npm run dev        # 开发服务器 → http://localhost:4321
-npm run build      # 类型检查 + 构建 → dist/
-npm run preview    # 预览构建产物
-```
-
-## 部署
-
-`dist/` 目录为纯静态文件，上传到任意 Web 服务器即可：
+需要 Node.js 22.12+。
 
 ```bash
-# 示例：rsync 到自有服务器
-rsync -avz dist/ user@your-server:/var/www/personal-site/
+npm ci
+npm run dev               # 无私有内容时启动空站，http://localhost:4321
+npm run build:empty       # 只构建已确认介绍与空页面，用于代码检查
+npm test                  # 内容隔离、图片、固定链接和真实构建测试
 ```
 
-Nginx 参考配置：
-
-```nginx
-server {
-    listen 80;
-    server_name your-domain.com;
-    root /var/www/personal-site;
-    index index.html;
-
-    location / {
-        try_files $uri $uri.html $uri/ =404;
-    }
-
-    error_page 404 /404.html;
-}
-```
-
-## 内容更新
-
-所有内容以 Markdown 存放在 `src/content/` 下，新增或修改后重建即可：
+使用真实内容时：
 
 ```bash
-# 添加新项目
-vim src/content/work/my-new-project.md
-npm run build
-rsync -avz dist/ user@your-server:/var/www/personal-site/
+CONTENT_DIR=../personal-space-content npm run dev
+CONTENT_DIR=../personal-space-content npm run build
+npm run preview
 ```
 
-## 目录结构
+本地内容在启动/构建时生成。修改私有内容后重新启动开发服务器；线上由保存触发自动构建。生产 `build` 未指定内容目录会停止，避免误发布空站。
 
+## 后台与上线
+
+第一次配置看 [部署说明](docs/deployment.md)，日常写字看 [编辑指南](docs/editor-guide.md)。部署由私有内容仓库中的 GitHub Actions 读取固定提交的站点代码，再上传 `dist` 到 Cloudflare Pages。
+
+```text
+scripts/content.mjs         发布状态筛选、Markdown、图片处理
+src/lib/content.ts          前台读取已发布内容
+src/pages/                  保持原有地址的页面
+content-template/           中文后台配置与私有仓库工作流模板
+scripts/init-content.mjs    将旧示例迁成私有草稿
+tests/content.test.mjs      包含实际 Astro 构建的隐私验收
 ```
-src/
-├── content/               # Markdown 内容（Work / Life / About）
-│   ├── config.ts          # Content Collections schema（Zod 校验）
-│   ├── work/              # 项目 .md
-│   ├── life/              # 生活记录 .md
-│   └── about.md           # 关于页
-├── pages/                 # 路由页面（文件系统路由）
-│   ├── index.astro        # Home（开机动画 + 主页）
-│   ├── work/              # Work 列表 + [slug] 详情
-│   ├── life/              # Life 网格 + [slug] 详情
-│   ├── about.astro        # About + 秘密入口
-│   ├── secret.astro       # 私人角落
-│   └── 404.astro          # 404 迷路小人
-├── components/            # 可复用组件
-│   ├── BootSplash.astro   # CRT 终端开机动画
-│   ├── Nav.astro          # 导航栏（含亮暗切换）
-│   ├── Character.astro    # SVG 小人（4 种角色）
-│   ├── WorkCard.astro     # 项目卡片
-│   ├── LifeCard.astro     # 生活记录卡片（hover 遮罩）
-│   ├── EmptyState.astro   # 空状态（等待小人）
-│   ├── SecretModal.astro  # 🗝️ 密码弹窗
-│   └── icons/             # SVG 图标（GitHub / Email / SunMoon）
-├── layouts/
-│   └── BaseLayout.astro   # HTML 骨架 + 主题持久化脚本
-├── styles/
-│   └── global.css         # CSS Variables、设计令牌、reset
-└── config.ts              # 站点全局配置
-```
+
+原示例与 BiliNote 仅作为待整理草稿。首发内容由本人确认，不用示例代替真实经历。

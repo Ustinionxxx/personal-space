@@ -1,0 +1,165 @@
+media:
+  name: images
+  label: 图片
+  input: media
+  output: /media
+  rename: random
+  extensions: [jpg, jpeg, png, webp]
+  categories: [image]
+
+components:
+  publication:
+    label: 发布状态
+    type: select
+    default: draft
+    required: true
+    description: 草稿只保存在私有仓库。选择已发布并保存后自动构建；保存成功不代表部署成功，自动发布结果请在内容仓库的 GitHub Actions 查看。
+    options:
+      values:
+        - { name: draft, label: 私密草稿 }
+        - { name: published, label: 已发布 }
+  stableId:
+    label: 稳定 ID（自动生成）
+    type: uuid
+    required: true
+    options: { editable: false, generate: false }
+    description: 用于固定链接，不随标题变化。
+  recordDate:
+    label: 记录日期
+    type: date
+    required: true
+    options: { format: yyyy-MM-dd }
+  writing:
+    label: 正文
+    type: rich-text
+    description: 两句话也可以。正文图片请从图片库选择；照片说明可填在下方照片列表。
+    options:
+      format: markdown
+      media: images
+      extensions: [jpg, jpeg, png, webp]
+      rename: random
+  legacyLink:
+    label: 旧链接（兼容已有地址）
+    type: string
+    hidden: true
+    readonly: true
+
+content:
+  - name: life
+    label: 生活记录
+    type: collection
+    path: life
+    format: yaml-frontmatter
+    subfolders: false
+    filename: { template: '{fields.id}.md', field: false }
+    operations: { rename: false }
+    view:
+      primary: date
+      fields: [date, title, status]
+      sort: [date, title, status]
+      default: { sort: date, order: desc }
+    fields:
+      - { name: id, component: stableId }
+      - { name: permalink, component: legacyLink }
+      - { name: status, component: publication }
+      - { name: date, component: recordDate }
+      - { name: title, label: 标题（可不填）, type: string }
+      - { name: body, component: writing }
+      - name: images
+        label: 照片（可不传）
+        type: object
+        list: true
+        description: 正文或照片至少留下一项，纯文字不需要照片。
+        fields:
+          - name: src
+            label: 照片
+            type: image
+            required: true
+            options: { media: images }
+          - { name: caption, label: 图片说明（可不填）, type: string }
+          - { name: alt, label: 给看不到图片的人描述一下画面（可不填）, type: string }
+      - { name: tags, label: 标签（可不填）, type: string, list: true }
+      - name: workRef
+        label: 相关折腾（可不选）
+        type: reference
+        options: { collection: work, value: '{fields.id}', label: '{fields.title}' }
+
+  - name: work
+    label: 项目
+    type: collection
+    path: work
+    format: yaml-frontmatter
+    subfolders: false
+    filename: { template: '{fields.id}.md', field: false }
+    operations: { rename: false }
+    view: { primary: title, fields: [title, stage, status], sort: [date, title, status], default: { sort: date, order: desc } }
+    fields:
+      - { name: id, component: stableId }
+      - { name: permalink, component: legacyLink }
+      - { name: status, component: publication }
+      - { name: date, component: recordDate }
+      - { name: title, label: 项目名称, type: string, required: true }
+      - { name: description, label: 一句话介绍（可不填）, type: text }
+      - name: stage
+        label: 进展
+        type: select
+        default: in-progress
+        required: true
+        options:
+          values:
+            - { name: in-progress, label: 进行中 }
+            - { name: completed, label: 已完成 }
+            - { name: paused, label: 暂时搁置 }
+      - name: body
+        component: writing
+        required: true
+        description: 自由写。请交代它是什么、你实际参与了什么；使用开源项目时注明来源。
+      - { name: cover, label: 项目图片（可不传）, type: image, options: { media: images } }
+      - { name: tech, label: 用到的技术（可不填）, type: string, list: true }
+      - name: links
+        label: 相关链接（可不填）
+        type: object
+        fields:
+          - { name: github, label: 源码, type: string }
+          - { name: demo, label: 演示, type: string }
+          - { name: process, label: 过程记录, type: string }
+      - name: lifeRef
+        label: 相关生活记录（可不选）
+        type: reference
+        options: { collection: life, value: '{fields.id}', label: '{fields.date} {fields.title}' }
+
+  - name: about
+    label: 个人介绍
+    type: file
+    path: about.md
+    format: yaml-frontmatter
+    operations: { delete: false }
+    fields:
+      - { name: status, component: publication }
+      - { name: body, component: writing }
+
+  - name: home
+    label: 首页设置
+    type: file
+    path: home.yml
+    format: yaml
+    operations: { delete: false }
+    fields:
+      - { name: status, component: publication }
+      - { name: name, label: 名字, type: string, required: true }
+      - { name: intro, label: 简短自我介绍, type: text }
+      - { name: now, label: 最近在……（只填后半句，留空隐藏）, type: string }
+      - name: featuredWork
+        label: 首页选中的项目（可不选）
+        type: reference
+        description: 只有已发布的项目会出现在首页。
+        options: { collection: work, value: '{fields.id}', label: '{fields.title}' }
+      - { name: github, label: GitHub 链接（留空隐藏）, type: string }
+      - { name: email, label: 联系邮箱（留空隐藏）, type: string }
+
+actions:
+  - name: publish-site
+    label: 手动重新发布
+    workflow: publish.yml
+    ref: main
+    confirm: false
