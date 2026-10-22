@@ -1,6 +1,6 @@
 # 当前接入状态
 
-更新于 2026-10-07。
+更新于 2026-10-22。
 
 ## 日常入口
 
@@ -9,6 +9,9 @@
 - [自动发布结果](https://github.com/Ustinionxxx/personal-space-content/actions/workflows/publish.yml)
 - [新版正式代码](https://github.com/Ustinionxxx/personal-space/tree/main)
 - [已合并的代码更新 PR #1](https://github.com/Ustinionxxx/personal-space/pull/1)
+- [已合并的三语言更新 PR #2](https://github.com/Ustinionxxx/personal-space/pull/2)
+- [已合并的分享预览、小图标与 sitemap 更新 PR #3](https://github.com/Ustinionxxx/personal-space/pull/3)
+- [网站检查后的整体改进 PR #4](https://github.com/Ustinionxxx/personal-space/pull/4)（待合并）
 
 ## 已完成
 
@@ -21,12 +24,15 @@
 - 本人提供的“尝试自媒体中”先保存草稿，再在后台改为已发布。对应 [自动部署](https://github.com/Ustinionxxx/personal-space-content/actions/runs/37483474927) 成功；首页和固定详情链接均已在浏览器确认。
 - 在真实内容构建中确认草稿文字、草稿 ID 和未发布测试图片不进入公开文件。临时验收草稿和色块测试图已从内容仓库当前版本清理。
 - 8 项测试通过，涵盖三语言页面、译文图片、原文回退与草稿隔离；类型检查无错误，正式构建和产物检查通过。Astro 已升级到 7，依赖审计为 0 条已知漏洞。
+- 三语言版本已通过 PR #2 合并：网站与 README 提供简体中文、繁體中文和 English。
+- 分享预览已通过 PR #3 合并：分享链接时显示预览图和标题，浏览器标签有小图标，并生成 sitemap 与 robots.txt。
+- 2026-10-22 网站检查后的改进（PR #4，待合并）：每个页面有自己的简介；增加浏览器安全规则（禁止摄像头、麦克风、定位等，只允许本站自己的脚本）；站内链接直接指向最终地址、样式文件长期缓存，打开更快；语言按钮的读屏名称包含按钮上的文字；删除仓库里与本站无关的截图；README 预览图改成真正的 PNG。
 - Cloudflare Pages Direct Upload 项目为 `personal-space-ustinionxxx`。经本人确认创建的指定账户 Pages Write Token 仅保存到私有内容仓库的 `CLOUDFLARE_API_TOKEN` Secret。
 - 首次缺少 Token 的运行在上传前明确失败，旧站保持可访问；配置后自动部署成功。
 
 ## 发布配置
 
-内容仓库的工作流固定引用 `personal-space` 主分支上经过检查的完整提交 SHA，具体版本记录在私有仓库的 `.github/workflows/publish.yml`。只有已发布文字及其引用照片进入构建，原图、草稿与凭据不进入公开产物。`personal-space-content` 只保存本站内容，不是另一套网站。
+内容仓库的工作流固定引用 `personal-space` 主分支上经过检查的完整提交 SHA，具体版本记录在私有仓库根目录的 `code-version.txt`（对应的内容仓库 PR 合并前仍写在 `.github/workflows/publish.yml`）。内容仓库每天自动检查一次代码是否有通过检查的新版本，有的话开一个待确认的 PR，合并后才会发布。只有已发布文字及其引用照片进入构建，原图、草稿与凭据不进入公开产物。`personal-space-content` 只保存本站内容，不是另一套网站。
 
 | 类型 | 名称 | 值或说明 |
 | --- | --- | --- |

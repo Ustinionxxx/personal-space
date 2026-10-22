@@ -25,9 +25,9 @@
 | 頁面 | 內容 |
 | --- | --- |
 | [首頁](https://personal-space-ustinionxxx.pages.dev/) | 簡短介紹、可選的“最近在……”、最近三條記錄、選中的項目與聯繫入口 |
-| [生活](https://personal-space-ustinionxxx.pages.dev/life) | 隨手記和生活照片，按記錄日期倒序排列；標題、標籤和照片都可選 |
-| [折騰](https://personal-space-ustinionxxx.pages.dev/work) | 做過或正在做的項目，也可以記錄暫時擱置的嘗試 |
-| [關於](https://personal-space-ustinionxxx.pages.dev/about) | 自由書寫的個人介紹，與網頁後臺使用同一份內容源 |
+| [生活](https://personal-space-ustinionxxx.pages.dev/life/) | 隨手記和生活照片，按記錄日期倒序排列；標題、標籤和照片都可選 |
+| [折騰](https://personal-space-ustinionxxx.pages.dev/work/) | 做過或正在做的項目，也可以記錄暫時擱置的嘗試 |
+| [關於](https://personal-space-ustinionxxx.pages.dev/about/) | 自由書寫的個人介紹，與網頁後臺使用同一份內容源 |
 
 - **寫得短也能發佈**：正文或照片至少有一項，不要求標題、字數或成果。
 - **照片完整展示**：支持 JPEG、PNG、WebP 與多圖說明，橫豎照片保留比例；發佈時生成網頁圖片並去除 EXIF。
@@ -35,6 +35,7 @@
 - **讀起來輕一點**：支持手機佈局、亮暗主題、鍵盤導航與減少動畫設置；終端開場可以主動播放、跳過或按 Esc 關閉。
 - **先留給自己，再決定公開**：網頁後臺支持私密草稿，網站只展示已發佈內容。
 - **三種語言**：簡體中文保留原鏈接，繁體中文與 English 使用獨立頁面；切換時保留當前記錄，導航、日期、空頁面提示和終端彩蛋隨語言變化。
+- **分享和搜尋更友善**：發到聊天軟體或社群平台時會顯示預覽圖、標題和每頁自己的簡介；瀏覽器分頁有網站小圖示；自動產生 sitemap，方便搜尋引擎找到每一頁。
 
 繁體內容由簡體原文在構建時轉換。英語正文、標題、首頁介紹和照片說明可在後臺的 English 字段中填寫；留空仍可正常發佈，英語頁面會保留原文並標註。不會把內容發送給外部翻譯服務。
 
