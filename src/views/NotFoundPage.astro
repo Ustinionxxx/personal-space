@@ -13,7 +13,7 @@ const t = messages[locale];
   <main id="main-content" class="not-found">
     <div class="not-found-content">
       <Character id="lost" size={140} />
-      <h1 class="text-h2 text-secondary" style="margin-top: var(--space-lg);">
+      <h1 class="text-h2 text-secondary not-found-title">
         {t.nothing}
       </h1>
       <a href={localizedPath('/', locale)} class="not-found-btn">{t.backHome}</a>
@@ -30,6 +30,10 @@ const t = messages[locale];
 
     .not-found-content {
       text-align: center;
+    }
+
+    .not-found-title {
+      margin-top: var(--space-lg);
     }
 
     .not-found-btn {
