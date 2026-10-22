@@ -1,14 +1,16 @@
 ---
 import { getContent } from '@/lib/content';
-import { localeFromPath, localizedPath, unlocalizedPath, locales, localeLabels, languageTags, messages } from '@/lib/i18n';
+import { localeFromPath, localizedPath, unlocalizedPath, withTrailingSlash, locales, localeLabels, languageTags, messages } from '@/lib/i18n';
 import SunMoonIcon from "@/components/icons/SunMoonIcon.astro";
 
 const locale = localeFromPath(Astro.url.pathname);
 const t = messages[locale];
 const siteConfig = getContent(locale).home;
-const navItems = [{ label: t.home, href: '/' }, { label: t.work, href: '/work' }, { label: t.life, href: '/life' }, { label: t.about, href: '/about' }];
-const currentPath = unlocalizedPath(Astro.url.pathname).replace(/\/$/, '') || '/';
-const isActive = (href: string) => href === '/' ? currentPath === '/' : currentPath === href || currentPath.startsWith(href + '/');
+const navItems = [{ label: t.home, href: '/' }, { label: t.work, href: '/work/' }, { label: t.life, href: '/life/' }, { label: t.about, href: '/about/' }];
+const currentPath = withTrailingSlash(unlocalizedPath(Astro.url.pathname));
+const isActive = (href: string) => href === '/' ? currentPath === '/' : currentPath.startsWith(href);
+// The accessible name contains the visible language name, so voice control users can say what they see.
+const languageLabel = `${t.language}${locale === 'en' ? ': ' : '：'}${localeLabels[locale]}`;
 ---
 
 <nav class="nav" aria-label={t.mainNav}>
@@ -33,7 +35,7 @@ const isActive = (href: string) => href === '/' ? currentPath === '/' : currentP
 
     <div class="nav-controls">
     <details class="language-picker" id="language-picker">
-      <summary aria-label={t.language}>{localeLabels[locale]} <span aria-hidden="true">⌄</span></summary>
+      <summary aria-label={languageLabel}>{localeLabels[locale]} <span aria-hidden="true">⌄</span></summary>
       <ul class="language-options">
         {locales.map(language => <li><a data-language-link href={localizedPath(Astro.url.pathname, language)} lang={languageTags[language]} hreflang={languageTags[language]} aria-current={language === locale ? 'true' : undefined}>{localeLabels[language]}</a></li>)}
       </ul>
