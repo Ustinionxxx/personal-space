@@ -13,6 +13,7 @@
     "content:init": "node scripts/init-content.mjs"
   },
   "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
     "astro": "^7.3.5",
     "opencc-js": "^1.4.2",
     "rehype-sanitize": "^6.0.0",
