@@ -11,6 +11,9 @@ export function translatedField(original, english, locale) {
 }
 
 export function localContentLink(href, locale) {
-  if (locale === 'zh-cn' || !/^(?:\/(?:life|work|about|secret)(?:\/|[?#]|$)|\/(?:[?#]|$))/.test(href)) return href;
-  return `/${locale}${href}`;
+  if (!/^(?:\/(?:life|work|about|secret)(?:\/|[?#]|$)|\/(?:[?#]|$))/.test(href)) return href;
+  // Site pages are folders, so internal links end with "/" and skip a redirect.
+  const [, pathname, rest] = href.match(/^([^?#]*)(.*)$/);
+  const local = `${pathname.endsWith('/') ? pathname : `${pathname}/`}${rest}`;
+  return locale === 'zh-cn' ? local : `/${locale}${local}`;
 }

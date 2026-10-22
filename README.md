@@ -25,9 +25,9 @@
 | 页面 | 内容 |
 | --- | --- |
 | [首页](https://personal-space-ustinionxxx.pages.dev/) | 简短介绍、可选的“最近在……”、最近三条记录、选中的项目与联系入口 |
-| [生活](https://personal-space-ustinionxxx.pages.dev/life) | 随手记和生活照片，按记录日期倒序排列；标题、标签和照片都可选 |
-| [折腾](https://personal-space-ustinionxxx.pages.dev/work) | 做过或正在做的项目，也可以记录暂时搁置的尝试 |
-| [关于](https://personal-space-ustinionxxx.pages.dev/about) | 自由书写的个人介绍，与网页后台使用同一份内容源 |
+| [生活](https://personal-space-ustinionxxx.pages.dev/life/) | 随手记和生活照片，按记录日期倒序排列；标题、标签和照片都可选 |
+| [折腾](https://personal-space-ustinionxxx.pages.dev/work/) | 做过或正在做的项目，也可以记录暂时搁置的尝试 |
+| [关于](https://personal-space-ustinionxxx.pages.dev/about/) | 自由书写的个人介绍，与网页后台使用同一份内容源 |
 
 - **写得短也能发布**：正文或照片至少有一项，不要求标题、字数或成果。
 - **照片完整展示**：支持 JPEG、PNG、WebP 与多图说明，横竖照片保留比例；发布时生成网页图片并去除 EXIF。
@@ -35,6 +35,7 @@
 - **读起来轻一点**：支持手机布局、亮暗主题、键盘导航与减少动画设置；终端开场可以主动播放、跳过或按 Esc 关闭。
 - **先留给自己，再决定公开**：网页后台支持私密草稿，网站只展示已发布内容。
 - **三种语言**：简体中文保留原链接，繁體中文与 English 使用独立页面；切换时保留当前记录，导航、日期、空页面提示和终端彩蛋随语言变化。
+- **分享和搜索更友好**：发到聊天软件或社交平台时会显示预览图、标题和每页自己的简介；浏览器标签页有网站小图标；自动生成 sitemap，方便搜索引擎找到每一页。
 
 繁体内容由简体原文在构建时转换。英语正文、标题、首页介绍和照片说明可在后台的 English 字段中填写；留空仍可正常发布，英语页面会保留原文并标注。不会把内容发送给外部翻译服务。
 

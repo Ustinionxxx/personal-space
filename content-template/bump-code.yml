@@ -1,0 +1,93 @@
+name: 检查网站代码新版本
+# Once a day (and on demand), look at the newest commit on the public code repository's main branch.
+# If it passed its "check.yml" checks and differs from code-version.txt, open or update a pull request
+# that changes code-version.txt. Nothing is merged automatically: the site only changes after the owner
+# merges that pull request, which then triggers publish.yml as usual.
+on:
+  schedule:
+    - cron: '17 1 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+concurrency:
+  group: bump-code
+  cancel-in-progress: false
+jobs:
+  bump:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      CODE_REPO: Ustinionxxx/personal-space
+      BRANCH: bot/bump-code-version
+    steps:
+      - name: 检出内容仓库 main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: 查找通过检查的最新代码版本
+        id: latest
+        run: |
+          set -euo pipefail
+          latest="$(gh api "repos/$CODE_REPO/commits/main" --jq .sha)"
+          current="$(tr -d '[:space:]' < code-version.txt)"
+          if ! printf '%s' "$latest" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo "::error::没有读到有效的代码版本：$latest"
+            exit 1
+          fi
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+          if [ "$latest" = "$current" ]; then
+            echo "网站已经在用最新的代码版本（${latest:0:7}），不需要更新。" >> "$GITHUB_STEP_SUMMARY"
+            echo "update=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          passed="$(gh api "repos/$CODE_REPO/actions/workflows/check.yml/runs?head_sha=$latest&branch=main&event=push&status=success&per_page=1" --jq .total_count)"
+          if [ "$passed" -lt 1 ]; then
+            echo "最新代码版本 ${latest:0:7} 的检查还没有通过（可能还在运行或失败了），这次先不提议更新。" >> "$GITHUB_STEP_SUMMARY"
+            echo "update=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "update=true" >> "$GITHUB_OUTPUT"
+      - name: 打开或更新待确认的 PR
+        if: steps.latest.outputs.update == 'true'
+        env:
+          LATEST: ${{ steps.latest.outputs.latest }}
+          CURRENT: ${{ steps.latest.outputs.current }}
+        run: |
+          set -euo pipefail
+          short="${LATEST:0:7}"
+          title="更新网站代码版本到 $short"
+          # Only push when the bot branch does not already propose this exact version.
+          if git fetch --quiet origin "$BRANCH" 2>/dev/null \
+            && [ "$(git show "origin/$BRANCH:code-version.txt" | tr -d '[:space:]')" = "$LATEST" ] \
+            && git merge-base --is-ancestor origin/main "origin/$BRANCH"; then
+            echo "分支 $BRANCH 已经是 $short，不用重新推送。"
+          else
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git switch --force-create "$BRANCH"
+            printf '%s\n' "$LATEST" > code-version.txt
+            git add code-version.txt
+            git commit --quiet --message "$title"
+            git push --force origin "$BRANCH"
+          fi
+          cat > "$RUNNER_TEMP/body.md" <<BODY
+          网站的公开代码有了一个新版本，已经通过自动检查。合并这个 PR 后，网站会自动重新发布并用上新代码；不合并的话，网站保持现在的样子。
+
+          - 现在用的版本：[\`${CURRENT:0:7}\`](https://github.com/$CODE_REPO/commit/$CURRENT)
+          - 新版本：[\`$short\`](https://github.com/$CODE_REPO/commit/$LATEST)
+          - [查看两个版本之间改了什么](https://github.com/$CODE_REPO/compare/$CURRENT...$LATEST)
+          - [新版本的检查结果](https://github.com/$CODE_REPO/commit/$LATEST/checks)
+
+          这个 PR 只改了 \`code-version.txt\` 这一个文件，由每天一次的自动检查创建，**不会自动合并**。
+          BODY
+          pr="$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number // empty')"
+          if [ -n "$pr" ]; then
+            gh pr edit "$pr" --title "$title" --body-file "$RUNNER_TEMP/body.md"
+            echo "已更新待确认的 PR #$pr：$title" >> "$GITHUB_STEP_SUMMARY"
+          else
+            url="$(gh pr create --base main --head "$BRANCH" --title "$title" --body-file "$RUNNER_TEMP/body.md")"
+            echo "已打开待确认的 PR：$url" >> "$GITHUB_STEP_SUMMARY"
+          fi

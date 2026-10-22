@@ -9,9 +9,13 @@ export function localeFromPath(path: string): Locale {
 export function unlocalizedPath(path: string) {
   return path.replace(/^\/(en|zh-tw)(?=\/|$)/, '') || '/';
 }
+// Pages are built as folders (/about/index.html), so links end with "/" to avoid a redirect.
+export function withTrailingSlash(path: string) {
+  return path.endsWith('/') ? path : `${path}/`;
+}
 export function localizedPath(path: string, locale: Locale) {
-  const base = unlocalizedPath(path);
-  return locale === 'zh-cn' ? base : `/${locale}${base === '/' ? '/' : base}`;
+  const base = withTrailingSlash(unlocalizedPath(path));
+  return locale === 'zh-cn' ? base : `/${locale}${base}`;
 }
 export function formatDate(date: string, locale: Locale = 'zh-cn') {
   return new Intl.DateTimeFormat(locale === 'zh-tw' ? 'zh-TW' : languageTags[locale], {
@@ -33,6 +37,9 @@ const simplified = {
   bootHint: '按 Esc 或点击“跳过 / 关闭”返回。', bootLines: ['$ open personal-space', '[ok] 文字', '[ok] 照片', '[ok] 还没完成的想法', '', '空间已打开。', '$ _'],
   retired: '旧入口', retiredTitle: '这个入口已经停用了', retiredBody: '这里是公开网页，不再用来存放私密内容。',
   notFound: '页面不存在', nothing: '这里什么都没有', backHome: '返回首页',
+  aboutDescription: '我是谁、最近在想什么，还有怎么找到我。',
+  lifeDescription: '日常的照片和随手记，想到什么就往这儿放一点。',
+  workDescription: '做过的、正在做的小东西，还有几个半路搁下的点子。',
 };
 export const messages: Record<Locale, typeof simplified> = {
   'zh-cn': simplified,
@@ -51,6 +58,9 @@ export const messages: Record<Locale, typeof simplified> = {
     bootHint: '按 Esc 或點選「跳過 / 關閉」返回。', bootLines: ['$ open personal-space', '[ok] 文字', '[ok] 照片', '[ok] 還沒完成的想法', '', '空間已開啟。', '$ _'],
     retired: '舊入口', retiredTitle: '這個入口已經停用了', retiredBody: '這裡是公開網頁，不再用來存放私密內容。',
     notFound: '頁面不存在', nothing: '這裡什麼都沒有', backHome: '返回首頁',
+    aboutDescription: '我是誰、最近在想什麼，還有怎麼找到我。',
+    lifeDescription: '日常的照片和隨手記，想到什麼就往這兒放一點。',
+    workDescription: '做過的、正在做的小東西，還有幾個半路擱下的點子。',
   },
   en: {
     home: 'Home', work: 'Projects', life: 'Life', about: 'About', mainNav: 'Main navigation', skip: 'Skip to content',
@@ -69,5 +79,22 @@ export const messages: Record<Locale, typeof simplified> = {
     bootLines: ['$ open personal-space', '[ok] words', '[ok] photos', '[ok] unfinished ideas', '', 'Space is open.', '$ _'],
     retired: 'Retired page', retiredTitle: 'This page has been retired', retiredBody: 'This is a public website. It does not store private content.',
     notFound: 'Page not found', nothing: 'Nothing here yet', backHome: 'Back to home',
+    aboutDescription: 'Who I am, what’s on my mind lately, and how to find me.',
+    lifeDescription: 'Everyday photos and quick notes. Whatever comes to mind ends up here.',
+    workDescription: 'Little things I’ve made, things I’m still making, and a few ideas left halfway.',
   },
 };
+
+const entities: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
+// Search and share description for a detail page: the start of the body as plain text, about 120 characters.
+export function excerpt(html: string, length = 120) {
+  const plain = html
+    .replace(/<(pre|figure)[\s\S]*?<\/\1>/g, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&(#x[\da-f]+|#\d+|\w+);/gi, (match, code: string) => code[0] !== '#' ? entities[code.toLowerCase()] ?? match
+      : String.fromCodePoint(code[1].toLowerCase() === 'x' ? parseInt(code.slice(2), 16) : Number(code.slice(1))))
+    .replace(/\s+/g, ' ')
+    .trim();
+  const characters = Array.from(plain);
+  return characters.length > length ? `${characters.slice(0, length).join('').trimEnd()}…` : plain;
+}

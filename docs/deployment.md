@@ -6,7 +6,7 @@
 
 1. 将这一版代码提交并推送到 GitHub。记录完整的 40 位提交 SHA。
 2. 本地执行 `npm run content:init -- ../personal-space-content`，生成中文 Pages CMS 配置、原示例草稿和发布工作流。目标目录必须为空。初始化会读取原站历史提交，因此需要保留该历史。
-3. 把内容仓库 `.github/workflows/publish.yml` 中站点代码的 `ref` 设为第 1 步的 SHA。不能使用 `main` 或其他浮动分支。以后更新前台时，也由开发者明确更新这个 SHA。
+3. 把内容仓库根目录 `code-version.txt` 设为第 1 步的 SHA（发布工作流 `publish.yml` 从这里读取要构建的代码版本）。不能使用 `main` 或其他浮动分支。以后更新前台时，内容仓库的「检查网站代码新版本」工作流（`bump-code.yml`）每天检查一次：代码 `main` 有了通过检查的新提交，就自动打开一个只修改 `code-version.txt` 的 PR，由本人确认合并后才会发布，不会自动合并。
 4. 在 GitHub 创建 `personal-space-content`，选择 **Private**，再推送准备好的内容。不要为此创建公开仓库。工作流在仓库为公开或分支不是 main 时拒绝部署。
 5. 在 [Pages CMS](https://app.pagescms.org/) 登录 GitHub。安装 GitHub App 时选 **Only select repositories → personal-space-content**，选择 main。首版不邀请协作者。
 6. 在 Cloudflare **Workers & Pages → Create application → Pages → Direct Upload** 创建项目，生产分支使用 `main`。记下项目名称及平台分配的 `*.pages.dev` 地址。不要连接公开代码仓库自动部署，也不要上传私有仓库目录。

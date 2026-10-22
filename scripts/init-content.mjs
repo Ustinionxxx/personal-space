@@ -41,8 +41,10 @@ for (const name of names) {
 const about = original('about.md');
 await fs.writeFile(path.join(destination, 'about.md'), `---\nstatus: draft\n---\n\n> 待整理：请确认并修改这份旧站个人介绍，再发布。\n\n${about.content.trim()}\n`);
 const sha = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
-const workflow = (await fs.readFile('content-template/publish.yml', 'utf8')).replace('__SITE_CODE_SHA__', sha);
-await fs.writeFile(path.join(destination, '.github/workflows/publish.yml'), workflow);
+// The published code version lives in code-version.txt; publish.yml reads it and bump-code.yml proposes updates.
+await fs.writeFile(path.join(destination, 'code-version.txt'), `${sha}\n`);
+await fs.copyFile('content-template/publish.yml', path.join(destination, '.github/workflows/publish.yml'));
+await fs.copyFile('content-template/bump-code.yml', path.join(destination, '.github/workflows/bump-code.yml'));
 await fs.copyFile('docs/editor-guide.md', path.join(destination, 'README.md'));
 await fs.writeFile(path.join(destination, '.gitignore'), '.DS_Store\n.env\n.env.*\n');
-console.log(`私有内容已准备：${destination}。请在推送前确认远端仓库为 private，并把发布工作流固定到已推送的新代码提交。`);
+console.log(`私有内容已准备：${destination}。请在推送前确认远端仓库为 private，并把 code-version.txt 固定到已推送的新代码提交。`);

@@ -27,11 +27,22 @@ jobs:
         with:
           path: content
           persist-credentials: false
+      # The pinned site code commit lives in code-version.txt so the bump workflow can propose
+      # updates without editing this workflow file. It must be one full 40-character commit SHA.
+      - name: 读取固定的代码版本
+        id: code
+        run: |
+          sha="$(tr -d '[:space:]' < content/code-version.txt)"
+          if ! printf '%s' "$sha" | grep -Eq '^[0-9a-f]{40}$'; then
+            echo '::error::code-version.txt 必须是一个完整的 40 位提交 SHA。'
+            exit 1
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
       - name: 检出固定版本的公开代码
         uses: actions/checkout@v4
         with:
           repository: Ustinionxxx/personal-space
-          ref: __SITE_CODE_SHA__
+          ref: ${{ steps.code.outputs.sha }}
           path: site
           persist-credentials: false
       - uses: actions/setup-node@v4

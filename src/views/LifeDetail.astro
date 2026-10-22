@@ -4,7 +4,7 @@ import Nav from '@/components/Nav.astro';
 import Footer from '@/components/Footer.astro';
 import type { LifeRecord } from '@/lib/content';
 import { getContent } from '@/lib/content';
-import { localeFromPath, localizedPath, formatDate, messages } from '@/lib/i18n';
+import { localeFromPath, localizedPath, formatDate, messages, excerpt } from '@/lib/i18n';
 import TranslationNote from '@/components/TranslationNote.astro';
 const locale = localeFromPath(Astro.url.pathname);
 const t = messages[locale];
@@ -12,8 +12,10 @@ const content = getContent(locale);
 interface Props { record: LifeRecord }
 const { record } = Astro.props;
 const title = record.title || formatDate(record.date, locale) + t.record;
+// Photo-only notes have no body text, so their first caption or the section sentence is used instead.
+const description = excerpt(record.html) || excerpt(record.images[0]?.caption || record.images[0]?.alt || '') || t.lifeDescription;
 ---
-<BaseLayout title={`${title} · ${content.home.name}`}>
+<BaseLayout title={`${title} · ${content.home.name}`} description={description}>
   <Nav />
   <main id="main-content" class="container container-narrow page-content">
     <a class="back-link" href={localizedPath('/life', locale)}>← {t.life}</a>

@@ -109,10 +109,10 @@ test('language content preserves code, links and IDs; English fallback is explic
   assert.equal(traditional.title, '簡體記錄');
   assert.match(traditional.html, /這裡記錄生活/);
   assert.match(traditional.html, /<code>简体代码<\/code>/);
-  assert.match(traditional.html, /href="\/zh-tw\/about"/);
+  assert.match(traditional.html, /href="\/zh-tw\/about\/"/);
   assert.equal(english.slug, output.life.find(entry => entry.id === 'translated').slug);
   assert.equal(english.title, 'A note');
-  assert.match(english.html, /href="\/en\/work\/a-project#details"/);
+  assert.match(english.html, /href="\/en\/work\/a-project\/#details"/);
   assert.match(english.html, /src="\/media\/[a-f0-9]{24}\.webp"/);
   assert.equal(english.images[0].caption, 'A scene');
   assert.equal(english.images[0].src, traditional.images[0].src);
@@ -173,10 +173,10 @@ test('production build: draft text/files absent in every artifact; latest three 
   assert.match(englishHome, /lang="en"/);
   assert.match(englishHome, /Recent notes/);
   assert.match(englishHome, /An English entry/);
-  assert.match(englishHome, /href="\/en\/life\/entry-4"/);
+  assert.match(englishHome, /href="\/en\/life\/entry-4\/"/);
   assert.match(englishHome, /original language/);
   const englishDetail = await fs.readFile('dist/en/life/entry-4/index.html', 'utf8');
-  assert.match(englishDetail, /href="\/en\/about"/);
+  assert.match(englishDetail, /href="\/en\/about\/"/);
   for (const prefix of ['', 'en/', 'zh-tw/']) {
     const detail = await fs.readFile(`dist/${prefix}life/entry-4/index.html`, 'utf8');
     assert.match(detail, /href="\/life\/entry-4\/?"/);
@@ -189,8 +189,39 @@ test('production build: draft text/files absent in every artifact; latest three 
   const englishProject = await fs.readFile('dist/en/work/work-shared/index.html', 'utf8');
   assert.match(englishProject, /A project in English/);
   assert.match(englishProject, /On hold/);
-  assert.match(englishProject, /href="\/en\/life\/entry-4"/);
+  assert.match(englishProject, /href="\/en\/life\/entry-4\/"/);
   assert.match(await fs.readFile('dist/en/about/index.html', 'utf8'), /About in English/);
+  // Internal links end with "/" so visitors are not redirected first.
+  for (const file of ['dist/index.html', 'dist/en/life/entry-4/index.html', 'dist/zh-tw/work/work-shared/index.html']) {
+    const page = await fs.readFile(file, 'utf8');
+    for (const [, href] of page.matchAll(/<a[^>]*href="(\/[^"#?]*)/g)) assert.match(href, /\/$/, `${file}: ${href}`);
+  }
+  // Each page has its own search/share description; detail pages use the start of their text.
+  const description = html => html.match(/<meta name="description" content="([^"]*)"/)?.[1];
+  const homeDescription = description(home);
+  assert.equal(description(await fs.readFile('dist/life/entry-4/index.html', 'utf8')), 'VISIBLE_ENTRY_4');
+  assert.equal(description(await fs.readFile('dist/en/life/entry-4/index.html', 'utf8')), 'An English entry. About');
+  assert.equal(description(englishProject), 'A project in English.');
+  const sectionDescriptions = new Set();
+  for (const prefix of ['', 'en/', 'zh-tw/']) for (const section of ['about', 'life', 'work']) {
+    const page = await fs.readFile(`dist/${prefix}${section}/index.html`, 'utf8');
+    const value = description(page);
+    assert.ok(value && value !== homeDescription, `${prefix}${section}`);
+    assert.match(page, new RegExp(`property="og:description" content="${value}"`));
+    assert.match(page, new RegExp(`name="twitter:description" content="${value}"`));
+    sectionDescriptions.add(value);
+  }
+  assert.equal(sectionDescriptions.size, 9);
+  // The language button's accessible name includes the language name shown on it.
+  assert.match(home, /<summary aria-label="选择语言：简体中文"[^>]*>简体中文 /);
+  assert.match(englishHome, /<summary aria-label="Choose a language: English"[^>]*>English /);
+  // Security headers list the fingerprints of the inline scripts actually on the pages.
+  const headers = await fs.readFile('dist/_headers', 'utf8');
+  assert.doesNotMatch(headers, /__INLINE_/);
+  assert.match(headers, /Permissions-Policy: .*camera=\(\).*geolocation=\(\).*microphone=\(\)/);
+  assert.match(headers, /Content-Security-Policy: default-src 'self'; script-src 'self' 'sha256-[^;]+; style-src 'self' 'sha256-/);
+  assert.doesNotMatch(headers, /unsafe-inline/);
+  assert.match(headers, /\/_astro\/\*\n  Cache-Control: public, max-age=31536000, immutable/);
   const traditionalHome = await fs.readFile('dist/zh-tw/index.html', 'utf8');
   assert.match(traditionalHome, /lang="zh-Hant"/);
   assert.match(traditionalHome, /首頁/);

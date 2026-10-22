@@ -25,9 +25,9 @@ This space can grow slowly. A photo, two sentences, or an unfinished experiment 
 | Page | Content |
 | --- | --- |
 | [Home](https://personal-space-ustinionxxx.pages.dev/en/) | A short introduction, an optional current activity, three recent notes, a featured project, and contact links |
-| [Life](https://personal-space-ustinionxxx.pages.dev/en/life) | Short notes and everyday photos, newest first; titles, tags, and photos are optional |
-| [Projects](https://personal-space-ustinionxxx.pages.dev/en/work) | Finished projects, work in progress, and experiments that have been set aside |
-| [About](https://personal-space-ustinionxxx.pages.dev/en/about) | A freely written introduction, using the same content source as the web editor |
+| [Life](https://personal-space-ustinionxxx.pages.dev/en/life/) | Short notes and everyday photos, newest first; titles, tags, and photos are optional |
+| [Projects](https://personal-space-ustinionxxx.pages.dev/en/work/) | Finished projects, work in progress, and experiments that have been set aside |
+| [About](https://personal-space-ustinionxxx.pages.dev/en/about/) | A freely written introduction, using the same content source as the web editor |
 
 - **Short notes count**: a record needs text or a photo. There is no title, word-count, or achievement requirement.
 - **Photos keep their proportions**: JPEG, PNG, WebP, and multi-photo captions are supported. Publishing creates web images and strips EXIF metadata.
@@ -35,6 +35,7 @@ This space can grow slowly. A photo, two sentences, or an unfinished experiment 
 - **A quiet reading experience**: responsive layouts, light and dark themes, keyboard navigation, and reduced motion. The terminal intro plays on request and can be skipped or closed with Esc.
 - **Keep it private until it is ready**: the web editor supports private drafts. The website shows published content only.
 - **Three languages**: Simplified Chinese keeps the existing URLs; Traditional Chinese and English have their own pages. Switching languages keeps the current record and updates navigation, dates, empty states, and the terminal intro.
+- **Friendly to sharing and search**: links shared in chats and social apps show a preview image, title, and a short description for each page. Browser tabs show the site icon, and a sitemap helps search engines find every page.
 
 Traditional Chinese is converted from the original text at build time. English titles, text, homepage introductions, and photo captions can be entered in the editor’s optional English fields. Missing translations keep the original text with a clear notice. Content is never sent to an external translation service.
 

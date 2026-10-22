@@ -7,6 +7,7 @@ for (const [command, args] of [
   [process.execPath, ['scripts/prepare.mjs', ...process.argv.slice(2)]],
   [process.execPath, [astro, 'check']],
   [process.execPath, [astro, 'build']],
+  [process.execPath, ['scripts/csp.mjs']],
   [process.execPath, ['scripts/audit-dist.mjs']],
 ]) {
   const run = spawnSync(command, args, { stdio: 'inherit', env: process.env });
