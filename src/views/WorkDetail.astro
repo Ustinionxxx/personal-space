@@ -4,7 +4,7 @@ import Nav from '@/components/Nav.astro';
 import Footer from '@/components/Footer.astro';
 import type { Project } from '@/lib/content';
 import { getContent } from '@/lib/content';
-import { localeFromPath, localizedPath, messages } from '@/lib/i18n';
+import { localeFromPath, localizedPath, messages, excerpt } from '@/lib/i18n';
 import TranslationNote from '@/components/TranslationNote.astro';
 const locale = localeFromPath(Astro.url.pathname);
 const t = messages[locale];
@@ -12,7 +12,7 @@ const content = getContent(locale);
 interface Props { project: Project }
 const { project } = Astro.props;
 ---
-<BaseLayout title={`${project.title} · ${content.home.name}`} description={project.description}>
+<BaseLayout title={`${project.title} · ${content.home.name}`} description={excerpt(project.html) || project.description || t.workDescription}>
   <Nav />
   <main id="main-content" class="container container-narrow page-content">
     <a class="back-link" href={localizedPath('/work', locale)}>← {t.work}</a>

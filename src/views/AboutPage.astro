@@ -11,7 +11,7 @@ const t = messages[locale];
 const content = getContent(locale);
 
 ---
-<BaseLayout title={`${t.about} · ${content.home.name}`}>
+<BaseLayout title={`${t.about} · ${content.home.name}`} description={t.aboutDescription}>
   <Nav />
   <main id="main-content" class="container container-narrow page-content">
     <header class="page-heading"><Character id="hero" size={48} /><h1 class="text-h1">{t.aboutMe}</h1></header>
