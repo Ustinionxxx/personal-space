@@ -1,6 +1,9 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
+// Fixed public files: headers, icons, share image, robots.txt and the sitemap index.
+const siteFiles = new Set(['_headers', 'favicon.svg', 'favicon-32x32.png', 'apple-touch-icon.png', 'og-image.png',
+  'robots.txt', 'sitemap-index.xml']);
 export async function auditDist(directory = 'dist') {
   const files = await fs.readdir(directory, { recursive: true, withFileTypes: true });
   for (const entry of files) {
@@ -9,7 +12,8 @@ export async function auditDist(directory = 'dist') {
     const file = path.join(entry.parentPath, entry.name);
     const relative = path.relative(directory, file).replaceAll(path.sep, '/');
     if (!/\.html$/.test(relative) && !/^_astro\/[\w.-]+\.(js|css)$/.test(relative)
-      && !/^media\/[a-f0-9]{24}\.webp$/.test(relative) && relative !== '_headers') throw new Error(`公开产物出现非预期文件：${relative}`);
+      && !/^media\/[a-f0-9]{24}\.webp$/.test(relative) && !siteFiles.has(relative)
+      && !/^sitemap-\d+\.xml$/.test(relative)) throw new Error(`公开产物出现非预期文件：${relative}`);
     if (relative.startsWith('media/')) {
       const meta = await sharp(file).metadata();
       if (meta.exif || meta.xmp || meta.iptc || meta.width > 1920 || meta.height > 2400) throw new Error('图片输出包含元信息或超过尺寸限制');
@@ -18,5 +22,5 @@ export async function auditDist(directory = 'dist') {
 }
 if (process.argv[1]?.endsWith('audit-dist.mjs')) {
   await auditDist();
-  console.log('公开产物检查通过：仅网页、样式、脚本及处理后的图片。');
+  console.log('公开产物检查通过：仅网页、样式、脚本、处理后的图片及站点图标、分享图和 sitemap。');
 }
